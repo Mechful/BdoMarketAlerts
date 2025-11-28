@@ -134,6 +134,25 @@ export default function Home() {
     },
   });
 
+  const testAlertMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/test-alert");
+    },
+    onSuccess: () => {
+      toast({
+        title: "Test Alert Sent",
+        description: "Check your Discord #market-alerts channel for the test message.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send test alert. Make sure DISCORD_WEBHOOK_URL is set.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     const id = parseInt(itemId, 10);
@@ -370,6 +389,30 @@ export default function Home() {
                 </p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Test Discord Connection
+            </CardTitle>
+            <CardDescription>
+              Send a test alert to verify your webhook is connected
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => testAlertMutation.mutate()}
+              disabled={testAlertMutation.isPending}
+              data-testid="button-test-alert"
+            >
+              {testAlertMutation.isPending ? "Sending..." : "Send Test Alert"}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3">
+              Click above to send a sample price alert to your #market-alerts channel
+            </p>
           </CardContent>
         </Card>
 
