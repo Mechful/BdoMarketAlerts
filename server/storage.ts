@@ -1,37 +1,64 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { type TrackedItem, type InsertTrackedItem } from "@shared/schema";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getTrackedItems(): Promise<TrackedItem[]>;
+  getTrackedItem(id: number, sid: number): Promise<TrackedItem | undefined>;
+  addTrackedItem(item: InsertTrackedItem): Promise<TrackedItem>;
+  removeTrackedItem(id: number, sid?: number): Promise<boolean>;
+  updateTrackedItem(id: number, sid: number, updates: Partial<TrackedItem>): Promise<TrackedItem | undefined>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+  private items: Map<string, TrackedItem>;
 
   constructor() {
-    this.users = new Map();
+    this.items = new Map();
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  private getKey(id: number, sid: number): string {
+    return `${id}-${sid}`;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async getTrackedItems(): Promise<TrackedItem[]> {
+    return Array.from(this.items.values());
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async getTrackedItem(id: number, sid: number): Promise<TrackedItem | undefined> {
+    return this.items.get(this.getKey(id, sid));
+  }
+
+  async addTrackedItem(item: InsertTrackedItem): Promise<TrackedItem> {
+    const trackedItem: TrackedItem = {
+      ...item,
+      addedAt: Date.now(),
+    };
+    this.items.set(this.getKey(item.id, item.sid), trackedItem);
+    return trackedItem;
+  }
+
+  async removeTrackedItem(id: number, sid?: number): Promise<boolean> {
+    if (sid !== undefined) {
+      return this.items.delete(this.getKey(id, sid));
+    }
+    
+    let removed = false;
+    for (const [key, item] of this.items.entries()) {
+      if (item.id === id) {
+        this.items.delete(key);
+        removed = true;
+      }
+    }
+    return removed;
+  }
+
+  async updateTrackedItem(id: number, sid: number, updates: Partial<TrackedItem>): Promise<TrackedItem | undefined> {
+    const key = this.getKey(id, sid);
+    const existing = this.items.get(key);
+    if (!existing) return undefined;
+    
+    const updated: TrackedItem = { ...existing, ...updates };
+    this.items.set(key, updated);
+    return updated;
   }
 }
 
