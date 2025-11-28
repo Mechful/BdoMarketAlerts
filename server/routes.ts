@@ -1,16 +1,125 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { z } from "zod";
 import { storage } from "./storage";
+import { startBot, getClient } from "./bot";
+import { getItemInfo } from "./bdo-api";
+import { checkPrices } from "./price-monitor";
+
+const addItemSchema = z.object({
+  id: z.number().int().positive(),
+  sid: z.number().int().min(0).max(20).default(0),
+});
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  
+  startBot().catch((error) => {
+    console.error("Discord bot not available:", error.message || error);
+    console.log("Bot commands won't work, but webhook alerts and web interface will still function.");
+  });
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.get("/api/status", async (req, res) => {
+    const client = getClient();
+    const items = await storage.getTrackedItems();
+    
+    res.json({
+      status: "online",
+      botConnected: client !== null && client.isReady(),
+      botUsername: client?.user?.tag || null,
+      trackedItemsCount: items.length,
+      region: process.env.BDO_REGION || "eu",
+      checkIntervalMs: parseInt(process.env.PRICE_CHECK_INTERVAL_MS || "300000", 10),
+    });
+  });
+
+  app.get("/api/items", async (req, res) => {
+    try {
+      const items = await storage.getTrackedItems();
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching items:", error);
+      res.status(500).json({ error: "Failed to fetch items" });
+    }
+  });
+
+  app.post("/api/items", async (req, res) => {
+    try {
+      const parseResult = addItemSchema.safeParse(req.body);
+      
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          error: "Invalid request body", 
+          details: parseResult.error.issues.map(i => i.message).join(", ")
+        });
+      }
+      
+      const { id, sid } = parseResult.data;
+      
+      const existing = await storage.getTrackedItem(id, sid);
+      if (existing) {
+        return res.status(409).json({ error: "Item already being tracked" });
+      }
+      
+      const itemInfo = await getItemInfo(id, sid);
+      if (!itemInfo) {
+        return res.status(404).json({ error: "Item not found in marketplace" });
+      }
+      
+      const item = await storage.addTrackedItem({
+        id: itemInfo.id,
+        sid: sid,
+        name: itemInfo.name,
+        lastPrice: itemInfo.lastSoldPrice,
+        lastStock: itemInfo.currentStock,
+        lastSoldTime: itemInfo.lastSoldTime,
+      });
+      
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Error adding item:", error);
+      res.status(500).json({ error: "Failed to add item" });
+    }
+  });
+
+  app.delete("/api/items/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const sidParam = req.query.sid as string | undefined;
+      const sid = sidParam ? parseInt(sidParam, 10) : undefined;
+      
+      if (isNaN(id) || id <= 0) {
+        return res.status(400).json({ error: "Invalid item ID" });
+      }
+      
+      if (sidParam !== undefined && (isNaN(sid!) || sid! < 0)) {
+        return res.status(400).json({ error: "Invalid sub ID" });
+      }
+      
+      const removed = await storage.removeTrackedItem(id, sid);
+      
+      if (!removed) {
+        return res.status(404).json({ error: "Item not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing item:", error);
+      res.status(500).json({ error: "Failed to remove item" });
+    }
+  });
+
+  app.post("/api/check-prices", async (req, res) => {
+    try {
+      await checkPrices();
+      res.json({ message: "Price check completed" });
+    } catch (error) {
+      console.error("Error checking prices:", error);
+      res.status(500).json({ error: "Failed to check prices" });
+    }
+  });
 
   return httpServer;
 }

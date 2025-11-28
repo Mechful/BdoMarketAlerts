@@ -14,6 +14,10 @@ run = ["npm", "run", "start"]
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 46391
+externalPort = 3001
+
 [env]
 PORT = "5000"
 
@@ -37,3 +41,13 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[agent]
+integrations = ["javascript_mem_db:1.0.0", "discord:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1444047645751378056/j3U9cUCOSRH0KlpZh9H4DROoK8U7iH25ftsT1lpoyS4Z0wrKsPgUIee2lWkoleiRMfg6"
+BDO_REGION = "eu"
+PRICE_CHECK_INTERVAL_MS = "300000"
