@@ -167,6 +167,40 @@ export function createHelpEmbed(): DiscordEmbed {
   };
 }
 
+export function createTestAlertEmbed(): DiscordEmbed {
+  return {
+    title: '"Seleth Longsword" EU - Price increase',
+    description: "Test alert to verify webhook connection",
+    color: COLORS.PRICE_INCREASE,
+    thumbnail: {
+      url: getItemIconUrl(10007),
+    },
+    fields: [
+      {
+        name: "New Price",
+        value: formatSilver(1500000),
+        inline: true,
+      },
+      {
+        name: "Old Price",
+        value: formatSilver(1428500),
+        inline: true,
+      },
+      {
+        name: "Stock",
+        value: "1",
+        inline: true,
+      },
+      {
+        name: "Last Sold",
+        value: "Just now",
+        inline: true,
+      },
+    ],
+    timestamp: new Date().toISOString(),
+  };
+}
+
 export async function sendWebhookMessage(embed: DiscordEmbed): Promise<boolean> {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   

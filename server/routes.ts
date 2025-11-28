@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { startBot, getClient } from "./bot";
 import { getItemInfo } from "./bdo-api";
 import { checkPrices } from "./price-monitor";
+import { createTestAlertEmbed, sendWebhookMessage } from "./discord-embeds";
 
 const addItemSchema = z.object({
   id: z.number().int().positive(),
@@ -118,6 +119,22 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error checking prices:", error);
       res.status(500).json({ error: "Failed to check prices" });
+    }
+  });
+
+  app.post("/api/test-alert", async (req, res) => {
+    try {
+      const embed = createTestAlertEmbed();
+      const success = await sendWebhookMessage(embed);
+      
+      if (!success) {
+        return res.status(500).json({ error: "Failed to send test alert. Check that DISCORD_WEBHOOK_URL is set correctly." });
+      }
+      
+      res.json({ message: "Test alert sent successfully!" });
+    } catch (error) {
+      console.error("Error sending test alert:", error);
+      res.status(500).json({ error: "Failed to send test alert" });
     }
   });
 
