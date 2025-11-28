@@ -15,13 +15,23 @@ export async function getItemInfo(id: number, sid: number = 0): Promise<BdoItemI
     
     const data = await response.json();
     
-    if (!data || data.length === 0) {
+    if (!data) {
       return null;
     }
     
-    const itemData = data.find((item: any) => 
-      item.sid === sid || item.minEnhance === sid
-    ) || data[0];
+    // API can return either a single object or an array
+    let itemData: any;
+    if (Array.isArray(data)) {
+      if (data.length === 0) {
+        return null;
+      }
+      itemData = data.find((item: any) => 
+        item.sid === sid || item.minEnhance === sid
+      ) || data[0];
+    } else {
+      // Single object response
+      itemData = data;
+    }
     
     return {
       id: itemData.id || id,
