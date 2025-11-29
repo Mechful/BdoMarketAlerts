@@ -90,10 +90,12 @@ export async function registerRoutes(
   // Setup session middleware
   app.use(
     session({
-      store: new SessionStore(),
+      store: new SessionStore({
+        checkPeriod: 86400000, // prune expired entries every 24h
+      }),
       secret: process.env.SESSION_SECRET || "your-secret-key",
       resave: false,
-      saveUninitialized: true,
+      saveUninitialized: false,
       cookie: { 
         secure: false, // Set to true if using HTTPS
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
