@@ -73,18 +73,9 @@ function isRateLimited(req: Request): boolean {
   return false;
 }
 
-// Token-based auth instead of sessions
-const validTokens = new Set<string>();
-
-function generateToken(): string {
-  return Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
-}
-
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.replace("Bearer ", "");
-  
-  if (token && validTokens.has(token)) {
+  if (req.session?.authenticated) {
     next();
   } else {
     res.status(401).json({ error: "Unauthorized" });
@@ -99,9 +90,7 @@ export async function registerRoutes(
   // Setup session middleware
   app.use(
     session({
-      store: new SessionStore({
-        checkPeriod: 86400000, // prune expired entries every 24h
-      }),
+      store: new SessionStore(),
       secret: process.env.SESSION_SECRET || "your-secret-key",
       resave: false,
       saveUninitialized: true,
@@ -136,11 +125,10 @@ export async function registerRoutes(
     const trimmedPassword = password.trim();
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
-      const token = generateToken();
-      validTokens.add(token);
+      req.session!.authenticated = true;
       // Clear rate limit on successful login
       loginAttempts.delete(getRateLimitKey(req));
-      res.json({ success: true, token });
+      res.json({ success: true });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
@@ -148,17 +136,17 @@ export async function registerRoutes(
 
   // Logout route
   app.post("/api/auth/logout", (req, res) => {
-    const token = req.headers.authorization?.replace("Bearer ", "");
-    if (token) {
-      validTokens.delete(token);
-    }
-    res.json({ success: true });
+    req.session?.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to logout" });
+      }
+      res.json({ success: true });
+    });
   });
 
   // Check auth status
   app.get("/api/auth/status", (req, res) => {
-    const token = req.headers.authorization?.replace("Bearer ", "");
-    res.json({ authenticated: token ? validTokens.has(token) : false });
+    res.json({ authenticated: req.session?.authenticated || false });
   });
 
   startBot().catch((error) => {

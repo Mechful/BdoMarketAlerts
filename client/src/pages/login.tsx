@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import coinIcon from "@assets/Coin_80x80.png";
+import { SiDiscord } from "react-icons/si";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -68,7 +68,9 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={coinIcon} alt="BDO Market Bot" className="h-20 w-20" />
+            <div className="p-3 rounded-md bg-[#5865F2]">
+              <SiDiscord className="h-8 w-8 text-white" />
+            </div>
           </div>
           <CardTitle className="text-2xl">BDO Market Alerts</CardTitle>
           <CardDescription>
