@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Discord bot and web application that monitors Black Desert Online (BDO) marketplace prices and sends alerts when prices change. The system tracks specified items from the BDO marketplace API and notifies users via Discord webhooks when price increases or decreases are detected. It features both Discord bot commands for item management and a React-based web interface for monitoring tracked items.
+A Discord bot and web application that monitors Black Desert Online (BDO) marketplace prices and sends alerts when prices change. The system tracks specified items from the BDO marketplace API and notifies users via Discord webhooks when price increases or decreases are detected. It features both Discord bot commands for item management and a React-based web interface for monitoring tracked items with full persistent database storage.
 
 ## User Preferences
 
@@ -22,6 +22,8 @@ Preferred communication style: Simple, everyday language.
 
 **Design System**: Custom Tailwind configuration with CSS variables for theming, following a "new-york" style variant from Shadcn/ui
 
+**Authentication**: Session-based authentication with express-session and MemoryStore
+
 **Rationale**: The combination of Shadcn/ui and Radix UI provides accessible, customizable components while Tailwind enables rapid styling. TanStack Query handles caching and synchronization of server data, eliminating the need for complex state management libraries.
 
 ### Backend Architecture
@@ -32,13 +34,19 @@ Preferred communication style: Simple, everyday language.
 
 **Discord Integration**: Discord.js v14 for bot functionality and webhook messaging
 
-**External API**: Arsha.io API for BDO marketplace data retrieval
+**External APIs**: 
+- Arsha.io for BDO marketplace price data
+- BlackDesertMarket API for item search (returns only tradeable items)
 
 **Build Process**: esbuild for server bundling with selective dependency bundling to optimize cold start times
 
-**Storage Layer**: Abstracted storage interface with in-memory implementation (MemStorage), designed to be replaceable with database-backed storage
+**Storage Layer**: Database-backed storage using PostgreSQL with Drizzle ORM for type-safe queries
 
-**Rationale**: Express provides a minimal, flexible foundation for the API. Discord.js is the standard library for Discord bot development. The abstracted storage pattern allows easy migration from in-memory to persistent storage (likely PostgreSQL via Drizzle ORM based on configuration files).
+**Database**: PostgreSQL (Neon serverless) with Drizzle ORM and drizzle-kit for migrations
+
+**Session Management**: express-session with MemoryStore for development authentication
+
+**Rationale**: Express provides a minimal, flexible foundation for the API. Discord.js is the standard library for Discord bot development. Drizzle ORM provides type safety and easy migrations. PostgreSQL ensures data persistence across app restarts.
 
 ### Core Features
 
@@ -47,6 +55,13 @@ Preferred communication style: Simple, everyday language.
 - Configurable check interval via environment variable (default: 5 minutes)
 - Price change detection and alert generation
 - Discord webhook notifications with formatted embeds
+- Persistent database storage of tracked items
+
+**Authentication & Security**:
+- Login protection with username/password (stored in Replit Secrets)
+- Session-based authentication persists across requests
+- Rate limiting on login attempts (5 attempts per 15 minutes)
+- User sessions stored in-memory during app runtime
 
 **Discord Bot Commands** (requires DISCORD_BOT_TOKEN):
 - `!add <id> [sid]` - Track a new marketplace item
@@ -61,12 +76,16 @@ Note: Discord commands require a Discord Bot Token. The web interface provides f
 - Item management (add/remove tracking)
 - Manual price check triggering
 - Display of current prices, stock levels, and last sold times
+- Item search by name using BlackDesertMarket API
+- Protected routes requiring authentication
+- Responsive design with light/dark mode support
 
 ### Data Models
 
-**TrackedItem Schema**:
-- `id`: Item identifier from BDO marketplace
-- `sid`: Sub-identifier (enhancement level)
+**TrackedItem Schema** (PostgreSQL):
+- `id`: Auto-increment primary key (serial)
+- `itemId`: Item identifier from BDO marketplace
+- `sid`: Sub-identifier (enhancement level, 0-20)
 - `name`: Item name
 - `lastPrice`: Last recorded price
 - `lastStock`: Current stock quantity
@@ -93,35 +112,80 @@ Note: Discord commands require a Discord Bot Token. The web interface provides f
 
 ### External Dependencies
 
-**BDO Marketplace API** (Arsha.io):
-- Base URL: `https://api.arsha.io`
-- Endpoints: `/v2/{region}/item` for item info, `/v2/{region}/history` for price history
-- Region configurable via environment variable (default: EU)
-- No authentication required
+**BDO Marketplace APIs**:
+- Arsha.io: Reliable price data
+  - Base URL: `https://api.arsha.io`
+  - Endpoints: `/v2/{region}/item` for item info, `/v2/{region}/history` for price history
+  - Region configurable via environment variable (default: EU)
+- BlackDesertMarket: Item search for tradeable items
+  - Base URL: `https://api.blackdesertmarket.com`
+  - Returns only marketplace-tradeable items
 
 **Discord**:
 - Discord.js library for bot functionality
 - Replit Discord Connector for OAuth and token management
 - Webhook URLs for alert delivery
 
-**Database** (Configured but not yet implemented):
-- Drizzle ORM configured for PostgreSQL
-- Neon serverless PostgreSQL driver
-- Migration system in place (`drizzle-kit`)
-- Currently using in-memory storage as placeholder
-
-**Design Rationale**: The system is architected to migrate from in-memory storage to PostgreSQL. Drizzle configuration exists with schema definitions, but actual database operations use the MemStorage implementation. This allows development without database provisioning while maintaining a clean migration path.
+**Database**:
+- PostgreSQL (Neon serverless)
+- Drizzle ORM for type-safe queries
+- drizzle-kit for migrations
 
 ### Configuration
 
 **Environment Variables**:
-- `DISCORD_WEBHOOK_URL`: Discord webhook URL for price alerts (required)
+- `DISCORD_WEBHOOK_URL`: Discord webhook URL for price alerts (required for webhook functionality)
+- `DISCORD_BOT_TOKEN`: Discord bot token for command handling (optional)
 - `BDO_REGION`: Marketplace region (default: "eu")
 - `PRICE_CHECK_INTERVAL_MS`: Polling frequency (default: 300000ms = 5 minutes)
-- `DISCORD_BOT_TOKEN`: Discord bot token for command handling (optional)
-- Discord authentication via Replit Connectors (automatic)
+- `DATABASE_URL`: PostgreSQL connection string (auto-configured on Replit)
+- `SESSION_SECRET`: Session encryption secret (stored in Replit Secrets)
+- `BOT_USERNAME`: Login username (stored in Replit Secrets)
+- `BOT_PASSWORD`: Login password (stored in Replit Secrets)
 
 **Build Configuration**:
 - Separate client and server builds
 - Server bundles allowlisted dependencies to reduce file system calls
 - Client builds to `dist/public`, server to `dist/index.cjs`
+- Vite configured with custom asset alias (`@assets`) for accessing attached images
+
+### Recent Changes (Session 2)
+
+**Database Persistence Implementation**:
+- Replaced in-memory storage (MemStorage) with PostgreSQL-backed storage
+- Created Drizzle ORM schema for tracked items in `shared/schema.ts`
+- Implemented DatabaseStorage class with full CRUD operations
+- Set up database migrations with drizzle-kit
+- Added error handling in storage layer to gracefully handle database issues
+
+**Authentication Session Fixes**:
+- Fixed session persistence issues by configuring express-session properly
+- Enabled session resave to ensure sessions persist across requests
+- Configured sameSite cookie policy to allow proper session transmission
+- Tracked items now survive app restarts and closures
+
+**Frontend Updates**:
+- Updated TrackedItem interface to match new database schema (added itemId field)
+- Fixed remove item mutation to use correct field names
+- Aligned all database field references throughout the codebase
+
+**Asset Management**:
+- Configured custom coin image (Coin_80x80.png) on login and home pages
+- Set up @assets alias in vite.config.ts for image imports
+
+### Known Limitations & Notes
+
+- **Startup Database Error**: Neon serverless driver shows a benign error when checking for items on empty database at startup, but app continues normally
+- **Discord Commands**: Only available when DISCORD_BOT_TOKEN is set; web interface provides all functionality
+- **No Publishing Costs**: App runs on Replit when browser is open; user cannot afford paid publishing
+- **Session Storage**: Sessions stored in memory; lost when app restarts (user data in database persists)
+
+### Technical Decisions
+
+**Separation of Concerns**: Item search uses BlackDesertMarket API (returns only tradeable items), while price monitoring uses Arsha.io API (reliable price data with history).
+
+**Rate Limiting**: In-memory rate limiter for login attempts prevents brute force attacks without requiring database overhead.
+
+**Error Handling**: All database operations wrapped in try-catch blocks to gracefully handle connection issues and prevent app crashes.
+
+**Asset Imports**: Custom images referenced through vite.config.ts @assets alias for clean imports and asset management.

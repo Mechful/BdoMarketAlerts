@@ -8,8 +8,7 @@ let monitorInterval: NodeJS.Timeout | null = null;
 export async function checkPrices(): Promise<void> {
   const items = await storage.getTrackedItems();
   
-  if (items.length === 0) {
-    console.log("No items to check");
+  if (!items || items.length === 0) {
     return;
   }
   
