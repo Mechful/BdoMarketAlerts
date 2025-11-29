@@ -474,51 +474,6 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              How It Works
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-md bg-muted/50 border border-border">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">1</span>
-                  </div>
-                  <h3 className="font-semibold text-foreground">Add Items</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Enter item IDs from BDOCodex to start tracking prices.
-                </p>
-              </div>
-              <div className="p-4 rounded-md bg-muted/50 border border-border">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">2</span>
-                  </div>
-                  <h3 className="font-semibold text-foreground">Monitor</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Prices are checked every 5 minutes automatically.
-                </p>
-              </div>
-              <div className="p-4 rounded-md bg-muted/50 border border-border">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold">3</span>
-                  </div>
-                  <h3 className="font-semibold text-foreground">Get Alerts</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Receive Discord alerts when prices change.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
