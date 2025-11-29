@@ -57,7 +57,7 @@ export async function registerRoutes(
       store: new SessionStore(),
       secret: process.env.SESSION_SECRET || "your-secret-key",
       resave: false,
-      saveUninitialized: false,
+      saveUninitialized: true,
       cookie: { 
         secure: false, // Set to true if using HTTPS
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
@@ -79,12 +79,6 @@ export async function registerRoutes(
     // Check if credentials match (use trim to remove any accidental whitespace)
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
-    
-    console.log("Login attempt:");
-    console.log("  Entered username length:", trimmedUsername.length, "Expected:", VALID_USERNAME.length);
-    console.log("  Entered password length:", trimmedPassword.length, "Expected:", VALID_PASSWORD.length);
-    console.log("  Username match:", trimmedUsername === VALID_USERNAME);
-    console.log("  Password match:", trimmedPassword === VALID_PASSWORD);
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
