@@ -231,5 +231,76 @@ export async function registerRoutes(
     }
   });
 
+  // Search items by name
+  app.get("/api/search-items", async (req, res) => {
+    try {
+      const query = (req.query.q as string || "").toLowerCase().trim();
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+
+      // Get list of common BDO items that users might search for
+      // This is a curated list of popular marketplace items
+      const commonItems = [
+        { id: 10007, name: "Iron Ore" },
+        { id: 10008, name: "Copper Ore" },
+        { id: 10009, name: "Tin Ore" },
+        { id: 10010, name: "Zinc Ore" },
+        { id: 10017, name: "Black Stone (Weapon)" },
+        { id: 10018, name: "Black Stone (Armor)" },
+        { id: 10019, name: "Concentrated Magical Black Stone" },
+        { id: 10020, name: "Concentrated Magical Black Stone (Armor)" },
+        { id: 10026, name: "Fragment of Weapon" },
+        { id: 10027, name: "Fragment of Armor" },
+        { id: 10032, name: "Elion's Tear" },
+        { id: 10033, name: "Memories of Elion" },
+        { id: 10035, name: "Clear Liquid Reagent" },
+        { id: 10047, name: "Purified Water" },
+        { id: 10108, name: "Fine Magical Dust" },
+        { id: 10109, name: "Coarse Magical Dust" },
+        { id: 10110, name: "Precision Magical Dust" },
+        { id: 10116, name: "Hard Black Crystal" },
+        { id: 10117, name: "Sharp Black Crystal" },
+        { id: 11607, name: "Ancient Stone" },
+        { id: 11612, name: "Spirit Stone" },
+        { id: 11615, name: "Flaming Feather" },
+        { id: 11616, name: "Windy Wind Stone" },
+        { id: 11617, name: "Dry Distilled Water" },
+        { id: 11618, name: "Purified Gem Powder" },
+        { id: 12066, name: "Godr's Shard" },
+        { id: 12067, name: "Devilsaur Tooth" },
+        { id: 12068, name: "Basilisk's Crystal" },
+        { id: 12069, name: "Centaur's Hoof" },
+        { id: 12070, name: "Mansha's Claw" },
+        { id: 12205, name: "Dragon Scale Fossil" },
+        { id: 15001, name: "Boiled Egg" },
+        { id: 15002, name: "Balenos Meal" },
+        { id: 15003, name: "Wheat Bread" },
+        { id: 15004, name: "Node Manager's Recommendation" },
+        { id: 15005, name: "Mediah Meal" },
+        { id: 15006, name: "Calpheon Meal" },
+        { id: 15007, name: "Valencia Meal" },
+        { id: 16002, name: "Witch's Earring" },
+        { id: 16003, name: "Bheg's Ring" },
+        { id: 16004, name: "Elkarr's Seal" },
+        { id: 16005, name: "Ogre Ring" },
+        { id: 16006, name: "Crescent Ring" },
+        { id: 16007, name: "Red Coral Earring" },
+        { id: 16008, name: "Blue Coral Ring" },
+      ];
+
+      // Filter items that match the search query
+      const results = commonItems
+        .filter(item => item.name.toLowerCase().includes(query))
+        .slice(0, 10); // Limit to 10 results
+      
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching items:", error);
+      res.status(500).json({ error: "Failed to search items" });
+    }
+  });
+
   return httpServer;
 }
