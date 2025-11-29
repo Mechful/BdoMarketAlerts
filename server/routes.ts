@@ -37,6 +37,42 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+// Simple in-memory rate limiter for login attempts
+const loginAttempts = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+const MAX_ATTEMPTS = 5; // 5 attempts per window
+
+function getRateLimitKey(req: Request): string {
+  // Use IP address as the rate limit key
+  return (req.ip || req.socket.remoteAddress || "unknown") as string;
+}
+
+function isRateLimited(req: Request): boolean {
+  const key = getRateLimitKey(req);
+  const now = Date.now();
+  const attempt = loginAttempts.get(key);
+
+  if (!attempt) {
+    loginAttempts.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return false;
+  }
+
+  // Reset if window has expired
+  if (now > attempt.resetTime) {
+    loginAttempts.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return false;
+  }
+
+  // Check if limit exceeded
+  if (attempt.count >= MAX_ATTEMPTS) {
+    return true;
+  }
+
+  // Increment counter
+  attempt.count++;
+  return false;
+}
+
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (req.session?.authenticated) {
@@ -69,6 +105,13 @@ export async function registerRoutes(
 
   // Login route
   app.post("/api/auth/login", (req, res) => {
+    // Check rate limit first
+    if (isRateLimited(req)) {
+      return res.status(429).json({ 
+        error: "Too many login attempts. Please wait 15 minutes before trying again." 
+      });
+    }
+
     const result = loginSchema.safeParse(req.body);
     
     if (!result.success) {
@@ -83,6 +126,8 @@ export async function registerRoutes(
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
+      // Clear rate limit on successful login
+      loginAttempts.delete(getRateLimitKey(req));
       res.json({ success: true });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
