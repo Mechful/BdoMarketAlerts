@@ -26,7 +26,6 @@ if (!VALID_USERNAME || !VALID_PASSWORD) {
   console.error("❌ ERROR: BOT_USERNAME and BOT_PASSWORD secrets are not set in Replit Secrets!");
   console.error("Please add them to your Secrets tab before trying to login.");
 }
-console.log("✓ Auth configured - Username length:", VALID_USERNAME.length, "Password length:", VALID_PASSWORD.length);
 
 const addItemSchema = z.object({
   id: z.number().int().positive(),

@@ -53,28 +53,6 @@ export async function getItemInfo(id: number, sid: number = 0, region: string = 
   }
 }
 
-export async function getItemPriceHistory(id: number, sid: number = 0, region: string = DEFAULT_REGION): Promise<number[] | null> {
-  try {
-    const url = `${BASE_URL}/v2/${region}/history?id=${id}&sid=${sid}&lang=en`;
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      console.error(`BDO API history error: ${response.status} ${response.statusText}`);
-      return null;
-    }
-    
-    const data = await response.json();
-    return data || [];
-  } catch (error) {
-    console.error("Error fetching price history:", error);
-    return null;
-  }
-}
-
-export function getItemIconUrl(id: number): string {
-  return `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${id}.png`;
-}
-
 export function formatSilver(amount: number): string {
   return amount.toLocaleString("en-US");
 }
@@ -91,27 +69,25 @@ export function formatRelativeTime(epochSeconds: number): string {
     return "Just now";
   } else if (diff < 3600) {
     const minutes = Math.floor(diff / 60);
-    return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    return `${minutes}m ago`;
   } else if (diff < 86400) {
     const hours = Math.floor(diff / 3600);
-    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-  } else if (diff < 2592000) {
-    const days = Math.floor(diff / 86400);
-    return `${days} day${days !== 1 ? 's' : ''} ago`;
-  } else if (diff < 31536000) {
-    const months = Math.floor(diff / 2592000);
-    return `${months} month${months !== 1 ? 's' : ''} ago`;
+    return `${hours}h ago`;
   } else {
-    const years = Math.floor(diff / 31536000);
-    return `${years} year${years !== 1 ? 's' : ''} ago`;
+    const days = Math.floor(diff / 86400);
+    return `${days}d ago`;
   }
+}
+
+export function getItemIconUrl(id: number): string {
+  return `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${id}.png`;
 }
 
 export function getEnhancementLabel(sid: number): string {
   if (sid === 0) return "";
   if (sid <= 15) return ` (+${sid})`;
   
-  const penLabels: { [key: number]: string } = {
+  const labels: { [key: number]: string } = {
     16: " (PRI)",
     17: " (DUO)",
     18: " (TRI)",
@@ -119,7 +95,7 @@ export function getEnhancementLabel(sid: number): string {
     20: " (PEN)",
   };
   
-  return penLabels[sid] || ` (+${sid})`;
+  return labels[sid] || ` (+${sid})`;
 }
 
 export interface SearchResult {

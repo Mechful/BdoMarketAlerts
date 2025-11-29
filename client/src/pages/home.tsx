@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ItemSearch } from "@/components/item-search";
-import { Bot, Package, Clock, Globe, CheckCircle, Plus, Trash2, AlertCircle, RefreshCw, Activity, LogOut } from "lucide-react";
+import { Package, Clock, Globe, CheckCircle, Plus, Trash2, AlertCircle, RefreshCw, Activity, LogOut } from "lucide-react";
 import {
   Select,
   SelectContent,
