@@ -7,6 +7,7 @@ import MemoryStore from "memorystore";
 declare module "express-session" {
   interface SessionData {
     authenticated?: boolean;
+    region?: string;
   }
 }
 import { storage } from "./storage";
@@ -159,24 +160,42 @@ export async function registerRoutes(
   app.use("/api/items", requireAuth);
   app.use("/api/check-prices", requireAuth);
   app.use("/api/test-alert", requireAuth);
+  app.use("/api/region", requireAuth);
+
+  // Region management endpoints
+  app.get("/api/region", (req, res) => {
+    const region = req.session?.region || "eu";
+    res.json({ region });
+  });
+
+  app.post("/api/region", (req, res) => {
+    const { region } = req.body;
+    if (!["eu", "na"].includes(region)) {
+      return res.status(400).json({ error: "Invalid region. Must be 'eu' or 'na'" });
+    }
+    req.session!.region = region;
+    res.json({ region });
+  });
 
   app.get("/api/status", async (req, res) => {
     const client = getClient();
-    const items = await storage.getTrackedItems();
+    const region = req.session?.region || "eu";
+    const items = await storage.getTrackedItems(region);
     
     res.json({
       status: "online",
       botConnected: client !== null && client.isReady(),
       botUsername: client?.user?.tag || null,
       trackedItemsCount: items.length,
-      region: process.env.BDO_REGION || "eu",
+      region: region,
       checkIntervalMs: parseInt(process.env.PRICE_CHECK_INTERVAL_MS || "300000", 10),
     });
   });
 
   app.get("/api/items", async (req, res) => {
     try {
-      const items = await storage.getTrackedItems();
+      const region = req.session?.region || "eu";
+      const items = await storage.getTrackedItems(region);
       res.json(items);
     } catch (error) {
       console.error("Error fetching items:", error);
@@ -196,8 +215,9 @@ export async function registerRoutes(
       }
       
       const { id, sid } = parseResult.data;
+      const region = req.session?.region || "eu";
       
-      const existing = await storage.getTrackedItem(id, sid);
+      const existing = await storage.getTrackedItem(id, sid, region);
       if (existing) {
         return res.status(409).json({ error: "Item already being tracked" });
       }
@@ -214,7 +234,7 @@ export async function registerRoutes(
         lastPrice: itemInfo.lastSoldPrice,
         lastStock: itemInfo.currentStock,
         lastSoldTime: itemInfo.lastSoldTime,
-      });
+      }, region);
       
       res.status(201).json(item);
     } catch (error) {
@@ -228,6 +248,7 @@ export async function registerRoutes(
       const id = parseInt(req.params.id, 10);
       const sidParam = req.query.sid as string | undefined;
       const sid = sidParam ? parseInt(sidParam, 10) : undefined;
+      const region = req.session?.region || "eu";
       
       if (isNaN(id) || id <= 0) {
         return res.status(400).json({ error: "Invalid item ID" });
@@ -237,7 +258,7 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid sub ID" });
       }
       
-      const removed = await storage.removeTrackedItem(id, sid);
+      const removed = await storage.removeTrackedItem(id, sid, region);
       
       if (!removed) {
         return res.status(404).json({ error: "Item not found" });

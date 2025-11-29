@@ -75,8 +75,17 @@ export default function Home() {
     refetchInterval: 10000,
   });
 
+  const [selectedRegion, setSelectedRegion] = useState<string>("eu");
+
+  const { data: currentRegion } = useQuery<{ region: string }>({
+    queryKey: ["/api/region"],
+    onSuccess: (data) => {
+      setSelectedRegion(data.region);
+    },
+  });
+
   const { data: items, isLoading: itemsLoading } = useQuery<TrackedItem[]>({
-    queryKey: ["/api/items"],
+    queryKey: ["/api/items", selectedRegion],
     refetchInterval: 30000,
   });
 
@@ -85,7 +94,7 @@ export default function Home() {
       return apiRequest("POST", "/api/items", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
       queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       setItemId("");
       setSubId("0");
@@ -108,7 +117,7 @@ export default function Home() {
       return apiRequest("DELETE", `/api/items/${data.id}?sid=${data.sid}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
       queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       toast({
         title: "Item Removed",
@@ -124,12 +133,35 @@ export default function Home() {
     },
   });
 
+  const changeRegionMutation = useMutation({
+    mutationFn: async (region: string) => {
+      return apiRequest("POST", "/api/region", { region });
+    },
+    onSuccess: (data: any) => {
+      setSelectedRegion(data.region);
+      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/region"] });
+      toast({
+        title: "Region Changed",
+        description: `Switched to ${data.region.toUpperCase()} region.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to change region.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const checkPricesMutation = useMutation({
     mutationFn: async () => {
       return apiRequest("POST", "/api/check-prices");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
       toast({
         title: "Prices Checked",
         description: "All item prices have been refreshed.",
@@ -213,6 +245,19 @@ export default function Home() {
               Sign Out
             </Button>
           </div>
+        </div>
+
+        <div className="flex items-center justify-end mb-4">
+          <Label htmlFor="region-select" className="mr-2">Marketplace Region:</Label>
+          <Select value={selectedRegion} onValueChange={(region) => changeRegionMutation.mutate(region)} disabled={changeRegionMutation.isPending}>
+            <SelectTrigger id="region-select" className="w-32" data-testid="select-region">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="eu">EU</SelectItem>
+              <SelectItem value="na">NA</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
