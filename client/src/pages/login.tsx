@@ -27,9 +27,24 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       onLoginSuccess();
     },
     onError: (error: any) => {
+      // Extract user-friendly error message from response
+      let errorMessage = "Invalid username or password.";
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        // Try to extract just the error part from the message
+        const match = error.message.match(/"error":"([^"]+)"/);
+        if (match && match[1]) {
+          errorMessage = match[1];
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid username or password.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
