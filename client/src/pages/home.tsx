@@ -81,7 +81,6 @@ export default function Home() {
     queryKey: ["/api/region"],
   });
 
-  // Sync selectedRegion with server region when it loads
   useEffect(() => {
     if (currentRegion?.region) {
       setSelectedRegion(currentRegion.region);
@@ -122,7 +121,6 @@ export default function Home() {
       return apiRequest("DELETE", `/api/items/${data.id}?sid=${data.sid}`);
     },
     onSuccess: async () => {
-      // Immediately refetch items and status
       await refetchItems();
       await queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       toast({

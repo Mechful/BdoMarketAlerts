@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": 721003,
+    "sid": 0,
+    "name": "Caphras Stone",
+    "lastPrice": 1990000,
+    "lastStock": 28854,
+    "lastSoldTime": 1764408574,
+    "addedAt": 1764408629602
+  }
+]

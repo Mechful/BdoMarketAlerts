@@ -23,14 +23,10 @@ function App() {
   const { mounted } = useTheme();
 
   useEffect(() => {
-    // Check auth status on mount
-    apiRequest("GET", "/api/auth/status").then((res: any) => {
-      return res.json();
-    }).then((data: any) => {
-      setAuthenticated(data.authenticated);
-    }).catch(() => {
-      setAuthenticated(false);
-    });
+    apiRequest("GET", "/api/auth/status")
+      .then((res: any) => res.json())
+      .then((data: any) => setAuthenticated(data.authenticated))
+      .catch(() => setAuthenticated(false));
   }, []);
 
   if (authenticated === null || !mounted) {

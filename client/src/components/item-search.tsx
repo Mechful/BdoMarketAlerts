@@ -40,7 +40,6 @@ export function ItemSearch({ onSelect, placeholder = "Search item name..." }: It
         setResults(data);
         setIsOpen(true);
       } catch (error) {
-        console.error("Search error:", error);
         setResults([]);
       } finally {
         setIsLoading(false);
