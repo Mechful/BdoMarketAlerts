@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "id": 721003,
+    "sid": 0,
+    "name": "Caphras Stone",
+    "lastPrice": 1720000,
+    "lastStock": 8792,
+    "lastSoldTime": 1764406801,
+    "addedAt": 1764407144607
+  },
+  {
+    "id": 65319,
+    "sid": 0,
+    "name": "Origin of Dark Hunger",
+    "lastPrice": 1200000000,
+    "lastStock": 123,
+    "lastSoldTime": 1764401684,
+    "addedAt": 1764407164141
+  }
+]

@@ -97,9 +97,10 @@ export default function Home() {
     mutationFn: async (data: { id: number; sid: number }) => {
       return apiRequest("POST", "/api/items", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
-      queryClient.invalidateQueries({ queryKey: ["/api/status"] });
+    onSuccess: async () => {
+      // Refetch items for all regions and status to ensure UI updates
+      await queryClient.refetchQueries({ queryKey: ["/api/items"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/status"] });
       setItemId("");
       setSubId("0");
       toast({
@@ -142,12 +143,11 @@ export default function Home() {
     mutationFn: async (region: string) => {
       return apiRequest("POST", "/api/region", { region });
     },
-    onSuccess: (_data: any, newRegion: string) => {
+    onSuccess: async (_data: any, newRegion: string) => {
       setSelectedRegion(newRegion);
-      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
-      queryClient.invalidateQueries({ queryKey: ["/api/items", newRegion] });
-      queryClient.invalidateQueries({ queryKey: ["/api/status"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/region"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/items"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/status"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/region"] });
       toast({
         title: "Region Changed",
         description: `Switched to ${newRegion.toUpperCase()} region.`,
@@ -166,8 +166,8 @@ export default function Home() {
     mutationFn: async () => {
       return apiRequest("POST", "/api/check-prices");
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/items"] });
       toast({
         title: "Prices Checked",
         description: "All item prices have been refreshed.",
