@@ -23,7 +23,9 @@ function App() {
   useEffect(() => {
     // Check auth status on mount
     apiRequest("GET", "/api/auth/status").then((res: any) => {
-      setAuthenticated(res.authenticated);
+      return res.json();
+    }).then((data: any) => {
+      setAuthenticated(data.authenticated);
     }).catch(() => {
       setAuthenticated(false);
     });
