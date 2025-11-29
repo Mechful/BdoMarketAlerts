@@ -79,9 +79,6 @@ export default function Home() {
 
   const { data: currentRegion } = useQuery<{ region: string }>({
     queryKey: ["/api/region"],
-    onSuccess: (data) => {
-      setSelectedRegion(data.region);
-    },
   });
 
   const { data: items, isLoading: itemsLoading } = useQuery<TrackedItem[]>({
@@ -139,7 +136,8 @@ export default function Home() {
     },
     onSuccess: (data: any) => {
       setSelectedRegion(data.region);
-      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items", data.region] });
       queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/region"] });
       toast({
@@ -147,10 +145,10 @@ export default function Home() {
         description: `Switched to ${data.region.toUpperCase()} region.`,
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to change region.",
+        description: error?.message || "Failed to change region.",
         variant: "destructive",
       });
     },

@@ -94,12 +94,14 @@ export class FileStorage implements IStorage {
     if (sid !== undefined) {
       removed = items.delete(this.getKey(id, sid));
     } else {
-      for (const [key, item] of items.entries()) {
+      const keysToDelete: string[] = [];
+      items.forEach((item, key) => {
         if (item.id === id) {
-          items.delete(key);
+          keysToDelete.push(key);
           removed = true;
         }
-      }
+      });
+      keysToDelete.forEach(key => items.delete(key));
     }
     if (removed) {
       this.saveToFile(region);
