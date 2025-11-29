@@ -67,6 +67,7 @@ export default function Home() {
   const { toast } = useToast();
   const [itemId, setItemId] = useState("");
   const [subId, setSubId] = useState("0");
+  const [itemSupportsEnhancement, setItemSupportsEnhancement] = useState(false);
 
   const { data: status, isLoading: statusLoading } = useQuery<BotStatus>({
     queryKey: ["/api/status"],
@@ -300,8 +301,12 @@ export default function Home() {
               <div>
                 <Label htmlFor="itemSearch">Search Item by Name</Label>
                 <ItemSearch 
-                  onSelect={(id, name) => {
+                  onSelect={(id, name, supportsEnhancement) => {
                     setItemId(id.toString());
+                    setItemSupportsEnhancement(supportsEnhancement);
+                    if (!supportsEnhancement) {
+                      setSubId("0");
+                    }
                   }}
                   placeholder="e.g. Iron Ore, Mushroom, Essence..."
                 />
@@ -320,9 +325,9 @@ export default function Home() {
                 </div>
                 <div className="w-32">
                   <Label htmlFor="enhancement">Enhancement</Label>
-                  <Select value={subId} onValueChange={setSubId}>
-                    <SelectTrigger id="enhancement" data-testid="select-enhancement">
-                      <SelectValue placeholder="Select enhancement" />
+                  <Select value={subId} onValueChange={setSubId} disabled={!itemSupportsEnhancement}>
+                    <SelectTrigger id="enhancement" data-testid="select-enhancement" disabled={!itemSupportsEnhancement}>
+                      <SelectValue placeholder={itemSupportsEnhancement ? "Select enhancement" : "Not available"} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="0">Base</SelectItem>

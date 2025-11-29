@@ -126,6 +126,7 @@ export interface SearchResult {
   id: number;
   name: string;
   icon: string;
+  supportsEnhancement: boolean;
 }
 
 // Cache for the full item database
@@ -188,13 +189,22 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
     }
 
     // Map results to our format
-    const results = apiResponse.data
-      .slice(0, 15) // Limit to 15 results
-      .map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
-      }));
+    const results = await Promise.all(
+      apiResponse.data
+        .slice(0, 15) // Limit to 15 results
+        .map(async (item: any) => {
+          // Fetch item info to determine if it supports enhancement
+          const itemInfo = await getItemInfo(item.id, 0);
+          const supportsEnhancement = itemInfo ? (itemInfo.maxEnhance || 0) > 0 : false;
+          
+          return {
+            id: item.id,
+            name: item.name,
+            icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
+            supportsEnhancement,
+          };
+        })
+    );
 
     return results;
   } catch (error) {

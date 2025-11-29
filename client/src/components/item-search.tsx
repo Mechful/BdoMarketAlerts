@@ -8,10 +8,11 @@ interface SearchResult {
   id: number;
   name: string;
   icon: string;
+  supportsEnhancement: boolean;
 }
 
 interface ItemSearchProps {
-  onSelect: (id: number, name: string) => void;
+  onSelect: (id: number, name: string, supportsEnhancement: boolean) => void;
   placeholder?: string;
 }
 
@@ -59,8 +60,8 @@ export function ItemSearch({ onSelect, placeholder = "Search item name..." }: It
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (id: number, name: string) => {
-    onSelect(id, name);
+  const handleSelect = (id: number, name: string, supportsEnhancement: boolean) => {
+    onSelect(id, name, supportsEnhancement);
     setQuery("");
     setResults([]);
     setIsOpen(false);
@@ -91,7 +92,7 @@ export function ItemSearch({ onSelect, placeholder = "Search item name..." }: It
               {results.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleSelect(item.id, item.name)}
+                  onClick={() => handleSelect(item.id, item.name, item.supportsEnhancement)}
                   className="w-full flex items-center gap-3 p-3 hover-elevate transition-colors text-left"
                   data-testid={`search-result-${item.id}`}
                 >
