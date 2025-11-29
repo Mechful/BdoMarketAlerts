@@ -17,9 +17,9 @@ import { createTestAlertEmbed, sendWebhookMessage } from "./discord-embeds";
 
 const SessionStore = MemoryStore(session);
 
-// Hardcoded credentials - change these to your desired username/password
-const VALID_USERNAME = "admin";
-const VALID_PASSWORD = "admin123";
+// Load credentials from environment variables (stored securely in Secrets)
+const VALID_USERNAME = process.env.BOT_USERNAME || "admin";
+const VALID_PASSWORD = process.env.BOT_PASSWORD || "admin123";
 
 const addItemSchema = z.object({
   id: z.number().int().positive(),
