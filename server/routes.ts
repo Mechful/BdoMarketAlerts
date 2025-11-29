@@ -1,26 +1,108 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
+import session from "express-session";
+import MemoryStore from "memorystore";
+
+declare module "express-session" {
+  interface SessionData {
+    authenticated?: boolean;
+  }
+}
 import { storage } from "./storage";
 import { startBot, getClient } from "./bot";
 import { getItemInfo } from "./bdo-api";
 import { checkPrices } from "./price-monitor";
 import { createTestAlertEmbed, sendWebhookMessage } from "./discord-embeds";
 
+const SessionStore = MemoryStore(session);
+
+// Hardcoded credentials - change these to your desired username/password
+const VALID_USERNAME = "admin";
+const VALID_PASSWORD = "admin123";
+
 const addItemSchema = z.object({
   id: z.number().int().positive(),
   sid: z.number().int().min(0).max(20).default(0),
 });
+
+const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+// Middleware to check if user is authenticated
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (req.session?.authenticated) {
+    next();
+  } else {
+    res.status(401).json({ error: "Unauthorized" });
+  }
+}
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   
+  // Setup session middleware
+  app.use(
+    session({
+      store: new SessionStore(),
+      secret: process.env.SESSION_SECRET || "your-secret-key",
+      resave: false,
+      saveUninitialized: false,
+      cookie: { 
+        secure: false, // Set to true if using HTTPS
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+      },
+    })
+  );
+
+  // Login route
+  app.post("/api/auth/login", (req, res) => {
+    const result = loginSchema.safeParse(req.body);
+    
+    if (!result.success) {
+      return res.status(400).json({ error: "Invalid request" });
+    }
+    
+    const { username, password } = result.data;
+    
+    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+      req.session!.authenticated = true;
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ error: "Invalid username or password" });
+    }
+  });
+
+  // Logout route
+  app.post("/api/auth/logout", (req, res) => {
+    req.session!.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to logout" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  // Check auth status
+  app.get("/api/auth/status", (req, res) => {
+    res.json({ authenticated: req.session?.authenticated || false });
+  });
+
   startBot().catch((error) => {
     console.error("Discord bot not available:", error.message || error);
     console.log("Bot commands won't work, but webhook alerts and web interface will still function.");
   });
+
+  // All protected routes require authentication
+  app.use("/api/status", requireAuth);
+  app.use("/api/items", requireAuth);
+  app.use("/api/check-prices", requireAuth);
+  app.use("/api/test-alert", requireAuth);
 
   app.get("/api/status", async (req, res) => {
     const client = getClient();

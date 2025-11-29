@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Package, Clock, Globe, CheckCircle, Plus, Trash2, AlertCircle, RefreshCw, Activity } from "lucide-react";
+import { Bot, Package, Clock, Globe, CheckCircle, Plus, Trash2, AlertCircle, RefreshCw, Activity, LogOut } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 
 interface BotStatus {
@@ -153,6 +153,15 @@ export default function Home() {
     },
   });
 
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/auth/logout");
+    },
+    onSuccess: () => {
+      window.location.reload();
+    },
+  });
+
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     const id = parseInt(itemId, 10);
@@ -173,14 +182,26 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto p-6 space-y-6">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-3 rounded-md bg-[#5865F2]">
-            <SiDiscord className="h-8 w-8 text-white" />
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-md bg-[#5865F2]">
+              <SiDiscord className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">BDO Market Bot</h1>
+              <p className="text-muted-foreground">Black Desert Online Marketplace Price Tracker</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">BDO Market Bot</h1>
-            <p className="text-muted-foreground">Black Desert Online Marketplace Price Tracker</p>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+            data-testid="button-logout"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
