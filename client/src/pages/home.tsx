@@ -406,9 +406,9 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeItemMutation.mutate({ id: item.id, sid: item.sid })}
+                        onClick={() => removeItemMutation.mutate({ itemId: item.itemId, sid: item.sid })}
                         disabled={removeItemMutation.isPending}
-                        data-testid={`button-remove-${item.id}-${item.sid}`}
+                        data-testid={`button-remove-${item.itemId}-${item.sid}`}
                       >
                         <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                       </Button>

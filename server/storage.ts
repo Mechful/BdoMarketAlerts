@@ -21,57 +21,77 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTrackedItem(id: number, sid: number): Promise<TrackedItem | undefined> {
-    const results = await db
-      .select()
-      .from(trackedItems)
-      .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
-      .limit(1);
-    return results[0];
+    try {
+      const results = await db
+        .select()
+        .from(trackedItems)
+        .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
+        .limit(1);
+      return results?.[0];
+    } catch (error) {
+      console.error("Error getting tracked item:", error);
+      return undefined;
+    }
   }
 
   async addTrackedItem(item: InsertTrackedItem): Promise<TrackedItem> {
-    const now = Date.now();
-    const result = await db
-      .insert(trackedItems)
-      .values({
-        itemId: item.itemId,
-        sid: item.sid,
-        name: item.name,
-        lastPrice: item.lastPrice,
-        lastStock: item.lastStock,
-        lastSoldTime: item.lastSoldTime,
-        addedAt: now,
-      })
-      .returning();
-    return result[0];
+    try {
+      const now = Date.now();
+      const result = await db
+        .insert(trackedItems)
+        .values({
+          itemId: item.itemId,
+          sid: item.sid,
+          name: item.name,
+          lastPrice: item.lastPrice,
+          lastStock: item.lastStock,
+          lastSoldTime: item.lastSoldTime,
+          addedAt: now,
+        })
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error adding tracked item:", error);
+      throw error;
+    }
   }
 
   async removeTrackedItem(id: number, sid?: number): Promise<boolean> {
-    if (sid !== undefined) {
+    try {
+      if (sid !== undefined) {
+        const result = await db
+          .delete(trackedItems)
+          .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)));
+        return result.rowCount > 0;
+      }
+
       const result = await db
         .delete(trackedItems)
-        .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)));
+        .where(eq(trackedItems.itemId, id));
       return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error removing tracked item:", error);
+      return false;
     }
-
-    const result = await db
-      .delete(trackedItems)
-      .where(eq(trackedItems.itemId, id));
-    return result.rowCount > 0;
   }
 
   async updateTrackedItem(id: number, sid: number, updates: Partial<TrackedItem>): Promise<TrackedItem | undefined> {
-    const result = await db
-      .update(trackedItems)
-      .set({
-        lastPrice: updates.lastPrice,
-        lastStock: updates.lastStock,
-        lastSoldTime: updates.lastSoldTime,
-        name: updates.name,
-      })
-      .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
-      .returning();
-    return result[0];
+    try {
+      const result = await db
+        .update(trackedItems)
+        .set({
+          lastPrice: updates.lastPrice,
+          lastStock: updates.lastStock,
+          lastSoldTime: updates.lastSoldTime,
+          name: updates.name,
+        })
+        .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
+        .returning();
+      return result?.[0];
+    } catch (error) {
+      console.error("Error updating tracked item:", error);
+      return undefined;
+    }
   }
 }
 
