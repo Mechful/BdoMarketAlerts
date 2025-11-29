@@ -180,17 +180,34 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
 
     // Search locally in the cached database
     const query_lower = query.toLowerCase();
-    const results = database
+    const candidates = database
       .filter((item: any) => {
         const name = item.name || item.itemName || "";
         return name.toLowerCase().includes(query_lower) && item.id;
       })
-      .slice(0, 15) // Limit to 15 results
-      .map((item: any) => ({
-        id: item.id,
-        name: item.name || item.itemName,
-        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
-      }));
+      .slice(0, 30); // Get more candidates since some won't have marketplace data
+
+    // Filter to only items with marketplace data (have current prices)
+    const results: SearchResult[] = [];
+    for (const item of candidates) {
+      try {
+        const itemResponse = await fetch(`${BASE_URL}/v2/${REGION}/en/item/${item.id}`);
+        if (itemResponse.ok) {
+          const itemData = await itemResponse.json();
+          // If the item has marketplace data, include it
+          if (itemData && itemData.id) {
+            results.push({
+              id: item.id,
+              name: item.name || item.itemName,
+              icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
+            });
+            if (results.length >= 15) break;
+          }
+        }
+      } catch {
+        // Skip items that fail to fetch
+      }
+    }
 
     return results;
   } catch (error) {
