@@ -285,17 +285,6 @@ export default function Home() {
               <Plus className="h-5 w-5" />
               Add Item to Track
             </CardTitle>
-            <CardDescription>
-              Enter the item ID from the BDO marketplace. You can find item IDs on{" "}
-              <a 
-                href="https://bdocodex.com/us/items/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                BDOCodex
-              </a>
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleAddItem} className="space-y-4">
@@ -369,9 +358,6 @@ export default function Home() {
                 </Button>
               </div>
             </form>
-            <p className="text-xs text-muted-foreground">
-              Enhancement levels: 0 = Base, 1-15 = +1 to +15, 16 = PRI, 17 = DUO, 18 = TRI, 19 = TET, 20 = PEN
-            </p>
           </CardContent>
         </Card>
 

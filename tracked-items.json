@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "id": 821251,
+    "sid": 0,
+    "name": "Flawless Herald's Crystal",
+    "lastPrice": 5000000000,
+    "lastStock": 0,
+    "lastSoldTime": 1764398321,
+    "addedAt": 1764404909667
+  },
+  {
+    "id": 821250,
+    "sid": 0,
+    "name": "Herald's Crystal",
+    "lastPrice": 39000000,
+    "lastStock": 1367,
+    "lastSoldTime": 1764405453,
+    "addedAt": 1764404920302
+  },
+  {
+    "id": 820977,
+    "sid": 0,
+    "name": "Cup of Reticent Moonbeams",
+    "lastPrice": 7900000000,
+    "lastStock": 10,
+    "lastSoldTime": 1764362361,
+    "addedAt": 1764405139219
+  }
+]
