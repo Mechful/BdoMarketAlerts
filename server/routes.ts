@@ -93,13 +93,13 @@ export async function registerRoutes(
     session({
       store: new SessionStore(),
       secret: process.env.SESSION_SECRET || "your-secret-key",
-      resave: false,
-      saveUninitialized: true,
+      resave: true,
+      saveUninitialized: false,
       cookie: { 
         secure: false, // Set to true if using HTTPS
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: true,
-        sameSite: false, // Allow cookies to be sent in cross-site requests
+        sameSite: 'lax',
       },
     })
   );
@@ -127,16 +127,9 @@ export async function registerRoutes(
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
-      // Explicitly save the session
-      req.session!.save((err) => {
-        if (err) {
-          console.error("Error saving session:", err);
-          return res.status(500).json({ error: "Login failed" });
-        }
-        // Clear rate limit on successful login
-        loginAttempts.delete(getRateLimitKey(req));
-        res.json({ success: true });
-      });
+      // Clear rate limit on successful login
+      loginAttempts.delete(getRateLimitKey(req));
+      res.json({ success: true });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
