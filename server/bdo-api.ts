@@ -172,42 +172,29 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
       return [];
     }
 
-    const database = await loadItemDatabase();
+    // Use BlackDesertMarket API for search - returns only marketplace-tradeable items
+    const url = `https://api.blackdesertmarket.com/search/${encodeURIComponent(query)}?region=eu&language=en-US`;
+    const response = await fetch(url);
     
-    if (database.length === 0) {
+    if (!response.ok) {
+      console.error(`BlackDesertMarket search error: ${response.status} ${response.statusText}`);
+      return [];
+    }
+    
+    const apiResponse = await response.json();
+    
+    if (!apiResponse.data || !Array.isArray(apiResponse.data)) {
       return [];
     }
 
-    // Search locally in the cached database
-    const query_lower = query.toLowerCase();
-    const candidates = database
-      .filter((item: any) => {
-        const name = item.name || item.itemName || "";
-        return name.toLowerCase().includes(query_lower) && item.id;
-      })
-      .slice(0, 30); // Get more candidates since some won't have marketplace data
-
-    // Filter to only items with marketplace data (have current prices)
-    const results: SearchResult[] = [];
-    for (const item of candidates) {
-      try {
-        const itemResponse = await fetch(`${BASE_URL}/v2/${REGION}/en/item/${item.id}`);
-        if (itemResponse.ok) {
-          const itemData = await itemResponse.json();
-          // If the item has marketplace data, include it
-          if (itemData && itemData.id) {
-            results.push({
-              id: item.id,
-              name: item.name || item.itemName,
-              icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
-            });
-            if (results.length >= 15) break;
-          }
-        }
-      } catch {
-        // Skip items that fail to fetch
-      }
-    }
+    // Map results to our format
+    const results = apiResponse.data
+      .slice(0, 15) // Limit to 15 results
+      .map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
+      }));
 
     return results;
   } catch (error) {
