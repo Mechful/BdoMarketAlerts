@@ -75,6 +75,7 @@ function isRateLimited(req: Request): boolean {
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
+  console.log("Auth check - Session:", req.session?.id, "Authenticated:", req.session?.authenticated);
   if (req.session?.authenticated) {
     next();
   } else {
@@ -98,7 +99,7 @@ export async function registerRoutes(
         secure: false, // Set to true if using HTTPS
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: true,
-        sameSite: 'lax', // Required for modern browsers to send cookies
+        sameSite: false, // Allow cookies to be sent in cross-site requests
       },
     })
   );
