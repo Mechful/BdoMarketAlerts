@@ -87,11 +87,14 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
-  // Setup session middleware
-  const sessionStore = new SessionStore({ checkPeriod: 3600000 });
+  // Setup session middleware with MemoryStore
+  const memStore = new SessionStore({
+    checkPeriod: 3600000,
+  });
+
   app.use(
     session({
-      store: sessionStore,
+      store: memStore,
       secret: process.env.SESSION_SECRET || "your-secret-key",
       resave: true,
       saveUninitialized: true,
@@ -104,12 +107,10 @@ export async function registerRoutes(
       },
     })
   );
-
-  // Ensure cookie is sent on login response
+  
+  // Debug middleware to log session info
   app.use((req, res, next) => {
-    if (req.session && req.session.authenticated === true) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    }
+    console.log(`[${new Date().toISOString()}] Session ID: ${req.sessionID}, Auth: ${req.session?.authenticated || 'false'}`);
     next();
   });
 
@@ -138,6 +139,7 @@ export async function registerRoutes(
       req.session!.authenticated = true;
       req.session!.userid = "authenticated_user";
       loginAttempts.delete(getRateLimitKey(req));
+      console.log(`[LOGIN] Session created: ${req.sessionID}, setting auth to true`);
       res.json({ success: true });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
