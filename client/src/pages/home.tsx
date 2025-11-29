@@ -91,6 +91,7 @@ export default function Home() {
   const { data: items, isLoading: itemsLoading, refetch: refetchItems } = useQuery<TrackedItem[]>({
     queryKey: ["/api/items", selectedRegion],
     refetchInterval: 30000,
+    staleTime: 0,
   });
 
   const addItemMutation = useMutation({
