@@ -27,39 +27,12 @@
     "addedAt": 1764409106439
   },
   {
-    "id": 719898,
-    "sid": 1,
-    "name": "Fallen God's Armor",
-    "lastPrice": 9200000000,
-    "lastStock": 2,
-    "lastSoldTime": 1764380714,
-    "addedAt": 1764410583179
-  },
-  {
-    "id": 719899,
-    "sid": 5,
-    "name": "Dahn's Gloves",
-    "lastPrice": 1720000000000,
-    "lastStock": 0,
-    "lastSoldTime": 1754882009,
-    "addedAt": 1764410609049
-  },
-  {
-    "id": 705533,
+    "id": 49728,
     "sid": 10,
-    "name": "Preonne Necklace",
-    "lastPrice": 342000000000,
+    "name": "Epheria Sailboat: Elise Cannon",
+    "lastPrice": 0,
     "lastStock": 0,
-    "lastSoldTime": 1764292656,
-    "addedAt": 1764410681251
-  },
-  {
-    "id": 705533,
-    "sid": 11,
-    "name": "Preonne Necklace",
-    "lastPrice": 3640000000,
-    "lastStock": 0,
-    "lastSoldTime": 1764403173,
-    "addedAt": 1764410697926
+    "lastSoldTime": 0,
+    "addedAt": 1764411102603
   }
 ]
