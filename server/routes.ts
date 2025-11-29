@@ -75,6 +75,7 @@ function isRateLimited(req: Request): boolean {
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
+  console.log("Auth middleware - Session ID:", req.sessionID, "Auth value:", req.session?.authenticated);
   if (req.session?.authenticated === true) {
     next();
   } else {
@@ -92,15 +93,14 @@ export async function registerRoutes(
     session({
       store: new SessionStore(),
       secret: process.env.SESSION_SECRET || "your-secret-key",
-      resave: false,
-      saveUninitialized: false,
+      resave: true,
+      saveUninitialized: true,
       cookie: { 
         secure: false,
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: false,
         sameSite: false,
       },
-      name: 'connect.sid',
     })
   );
 
@@ -127,8 +127,14 @@ export async function registerRoutes(
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
-      loginAttempts.delete(getRateLimitKey(req));
-      res.json({ success: true });
+      req.session!.save((saveErr) => {
+        loginAttempts.delete(getRateLimitKey(req));
+        if (saveErr) {
+          console.error("Failed to save session:", saveErr);
+          return res.status(500).json({ error: "Login failed" });
+        }
+        res.json({ success: true });
+      });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
