@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -80,6 +80,13 @@ export default function Home() {
   const { data: currentRegion } = useQuery<{ region: string }>({
     queryKey: ["/api/region"],
   });
+
+  // Sync selectedRegion with server region when it loads
+  useEffect(() => {
+    if (currentRegion?.region) {
+      setSelectedRegion(currentRegion.region);
+    }
+  }, [currentRegion?.region]);
 
   const { data: items, isLoading: itemsLoading } = useQuery<TrackedItem[]>({
     queryKey: ["/api/items", selectedRegion],
