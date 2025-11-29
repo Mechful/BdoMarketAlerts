@@ -27,13 +27,14 @@ export interface DiscordEmbed {
   timestamp?: string;
 }
 
-export function createPriceAlertEmbed(alert: PriceAlert): DiscordEmbed {
+export function createPriceAlertEmbed(alert: PriceAlert, region: string = "eu"): DiscordEmbed {
   const isIncrease = alert.priceChange === "increase";
   const arrow = isIncrease ? "Price increase" : "Price decrease";
   const itemName = alert.item.name + getEnhancementLabel(alert.item.sid);
+  const regionLabel = region.toUpperCase();
   
   return {
-    title: `"${itemName}" EU - ${arrow}`,
+    title: `"${itemName}" ${regionLabel} - ${arrow}`,
     color: isIncrease ? COLORS.PRICE_INCREASE : COLORS.PRICE_DECREASE,
     thumbnail: {
       url: getItemIconUrl(alert.item.id),
@@ -167,9 +168,10 @@ export function createHelpEmbed(): DiscordEmbed {
   };
 }
 
-export function createTestAlertEmbed(): DiscordEmbed {
+export function createTestAlertEmbed(region: string = "eu"): DiscordEmbed {
+  const regionLabel = region.toUpperCase();
   return {
-    title: '"Seleth Longsword" EU - Price increase',
+    title: `"Seleth Longsword" ${regionLabel} - Price increase`,
     description: "Test alert to verify webhook connection",
     color: COLORS.PRICE_INCREASE,
     thumbnail: {

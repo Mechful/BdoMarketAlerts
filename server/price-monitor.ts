@@ -5,15 +5,15 @@ import type { PriceAlert, TrackedItem } from "@shared/schema";
 
 let monitorInterval: NodeJS.Timeout | null = null;
 
-export async function checkPrices(): Promise<void> {
-  const items = await storage.getTrackedItems();
+export async function checkPrices(region: string = "eu"): Promise<void> {
+  const items = await storage.getTrackedItems(region);
   
   if (items.length === 0) {
-    console.log("No items to check");
+    console.log(`No items to check for ${region.toUpperCase()}`);
     return;
   }
   
-  console.log(`Checking prices for ${items.length} items...`);
+  console.log(`Checking prices for ${items.length} items in ${region.toUpperCase()}...`);
   
   for (const item of items) {
     try {
@@ -44,7 +44,7 @@ export async function checkPrices(): Promise<void> {
         
         console.log(`Price ${priceChange} detected for ${item.name}: ${oldPrice} -> ${newPrice}`);
         
-        const embed = createPriceAlertEmbed(alert);
+        const embed = createPriceAlertEmbed(alert, region);
         await sendWebhookMessage(embed);
       }
       
@@ -53,7 +53,7 @@ export async function checkPrices(): Promise<void> {
         lastStock: currentInfo.currentStock,
         lastSoldTime: currentInfo.lastSoldTime,
         name: currentInfo.name || item.name,
-      });
+      }, region);
       
       await new Promise(resolve => setTimeout(resolve, 500));
       
@@ -62,7 +62,7 @@ export async function checkPrices(): Promise<void> {
     }
   }
   
-  console.log("Price check completed");
+  console.log(`Price check completed for ${region.toUpperCase()}`);
 }
 
 export function startPriceMonitor(): void {

@@ -273,7 +273,8 @@ export async function registerRoutes(
 
   app.post("/api/check-prices", async (req, res) => {
     try {
-      await checkPrices();
+      const region = req.session?.region || "eu";
+      await checkPrices(region);
       res.json({ message: "Price check completed" });
     } catch (error) {
       console.error("Error checking prices:", error);
@@ -283,7 +284,8 @@ export async function registerRoutes(
 
   app.post("/api/test-alert", async (req, res) => {
     try {
-      const embed = createTestAlertEmbed();
+      const region = req.session?.region || "eu";
+      const embed = createTestAlertEmbed(region);
       const success = await sendWebhookMessage(embed);
       
       if (!success) {
