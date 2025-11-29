@@ -89,30 +89,17 @@ export default function Home() {
   }, [currentRegion?.region]);
 
   const { data: items, isLoading: itemsLoading, refetch: refetchItems } = useQuery<TrackedItem[]>({
-    queryKey: ["/api/items", selectedRegion],
+    queryKey: ["/api/items"],
     refetchInterval: 30000,
     staleTime: 0,
   });
-
-  // Debug: Log items whenever they change
-  useEffect(() => {
-    console.log("Items state:", {
-      items,
-      itemsLoading,
-      itemsLength: items?.length,
-      selectedRegion
-    });
-  }, [items, itemsLoading, selectedRegion]);
 
   const addItemMutation = useMutation({
     mutationFn: async (data: { id: number; sid: number }) => {
       return apiRequest("POST", "/api/items", data);
     },
     onSuccess: async () => {
-      // Immediately refetch items and status
-      console.log("Add success - refetching items");
-      const result = await refetchItems();
-      console.log("Refetch result:", result);
+      await refetchItems();
       await queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       setItemId("");
       setSubId("0");
@@ -122,7 +109,6 @@ export default function Home() {
       });
     },
     onError: (error: any) => {
-      console.error("Add error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to add item. Check the ID and try again.",
