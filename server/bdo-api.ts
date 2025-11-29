@@ -166,6 +166,11 @@ function getItemType(itemName: string): 'accessory' | 'equipment' | 'other' {
 function getMaxEnhancementLevel(itemName: string, itemType: 'accessory' | 'equipment' | 'other'): number {
   const lowerName = itemName.toLowerCase();
   
+  // Epheria gear (blue and green): base to +10 (0-10)
+  if (lowerName.includes('epheria')) {
+    return 10;
+  }
+  
   // Preonne accessories: base to +10 (0-10)
   if (lowerName.includes('preonne')) {
     return 10;
