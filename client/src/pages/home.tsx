@@ -66,6 +66,8 @@ function getEnhancementLabel(sid: number): string {
 export default function Home() {
   const { toast } = useToast();
   const [itemId, setItemId] = useState("");
+  const [itemName, setItemName] = useState("");
+  const [itemIcon, setItemIcon] = useState("");
   const [subId, setSubId] = useState("0");
   const [itemSupportsEnhancement, setItemSupportsEnhancement] = useState(false);
   const [itemType, setItemType] = useState<'accessory' | 'equipment' | 'other'>('other');
@@ -101,6 +103,8 @@ export default function Home() {
       await refetchItems();
       await queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       setItemId("");
+      setItemName("");
+      setItemIcon("");
       setSubId("0");
       toast({
         title: "Item Added",
@@ -337,11 +341,13 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleAddItem} className="space-y-4">
-              <div>
+              <div className="space-y-3">
                 <Label htmlFor="itemSearch">Search Item by Name</Label>
                 <ItemSearch 
                   onSelect={(id, name, supportsEnhancement, itemTypeValue) => {
                     setItemId(id.toString());
+                    setItemName(name);
+                    setItemIcon(`https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${id}.png`);
                     setItemSupportsEnhancement(supportsEnhancement);
                     setItemType(itemTypeValue);
                     if (!supportsEnhancement) {
@@ -350,6 +356,22 @@ export default function Home() {
                   }}
                   placeholder="e.g. Iron Ore, Mushroom, Essence..."
                 />
+                {itemName && (
+                  <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50 border border-border">
+                    <img 
+                      src={itemIcon} 
+                      alt={itemName} 
+                      className="w-10 h-10 rounded bg-background"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/favicon.png";
+                      }}
+                    />
+                    <div>
+                      <p className="font-medium text-foreground text-sm">{itemName}</p>
+                      <p className="text-xs text-muted-foreground">ID: {itemId}</p>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex flex-wrap items-end gap-4">
                 <div className="flex-1 min-w-[150px]">
