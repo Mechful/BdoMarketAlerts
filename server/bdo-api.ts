@@ -127,6 +127,7 @@ export interface SearchResult {
   name: string;
   icon: string;
   supportsEnhancement: boolean;
+  itemType: 'accessory' | 'equipment' | 'other';
 }
 
 // Cache for the full item database
@@ -167,35 +168,42 @@ async function loadItemDatabase(): Promise<any[]> {
   }
 }
 
+function getItemType(itemName: string): 'accessory' | 'equipment' | 'other' {
+  const lowerName = itemName.toLowerCase();
+  
+  // Check for accessories
+  const accessoryKeywords = ['ring', 'earring', 'necklace', 'belt', 'bracelet', 'brooch'];
+  if (accessoryKeywords.some(keyword => lowerName.includes(keyword))) {
+    return 'accessory';
+  }
+  
+  // Check for equipment
+  const equipmentKeywords = ['sword', 'dagger', 'axe', 'mace', 'spear', 'bow', 'staff', 'armor', 'helmet', 'chest', 'gloves', 'legs', 'boots', 'shield', 'helm', 'plate', 'gauntlets'];
+  if (equipmentKeywords.some(keyword => lowerName.includes(keyword))) {
+    return 'equipment';
+  }
+  
+  return 'other';
+}
+
 function canItemBeEnhanced(itemName: string, itemId: number, maxEnhance: number): boolean {
   // If Arsha API provides maxEnhance > 0, trust that
   if (maxEnhance > 0) {
     return true;
   }
   
-  // Check item name for keywords that indicate enhancement support
-  const lowerName = itemName.toLowerCase();
-  
-  // Accessories that support PRI/DUO/TRI/TET/PEN (enhancement levels 16-20)
-  const accessoryKeywords = ['ring', 'earring', 'necklace', 'belt', 'bracelet', 'brooch'];
-  if (accessoryKeywords.some(keyword => lowerName.includes(keyword))) {
+  const itemType = getItemType(itemName);
+  if (itemType !== 'other') {
     return true;
   }
   
   // Weapons and armor typically support enhancements (exclude materials)
   const enhancementBlocklist = ['ore', 'stone', 'shard', 'crystal', 'powder', 'fragment', 'hide', 'blood', 'leather', 'ingot', 'wood', 'timber', 'plywood', 'flux', 'ash', 'elixir', 'essence', 'poison'];
   
-  if (enhancementBlocklist.some(keyword => lowerName.includes(keyword))) {
+  if (enhancementBlocklist.some(keyword => itemName.toLowerCase().includes(keyword))) {
     return false;
   }
   
-  // If the name contains equipment-like keywords, likely enhanceable
-  const equipmentKeywords = ['sword', 'dagger', 'axe', 'mace', 'spear', 'bow', 'staff', 'armor', 'helmet', 'chest', 'gloves', 'legs', 'boots', 'shield', 'helm', 'plate', 'leather'];
-  if (equipmentKeywords.some(keyword => lowerName.includes(keyword))) {
-    return true;
-  }
-  
-  // Default to false for unknown items
   return false;
 }
 
@@ -229,12 +237,14 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
           const itemInfo = await getItemInfo(item.id, 0);
           const maxEnhance = itemInfo ? (itemInfo.maxEnhance || 0) : 0;
           const supportsEnhancement = canItemBeEnhanced(item.name, item.id, maxEnhance);
+          const itemType = getItemType(item.name);
           
           return {
             id: item.id,
             name: item.name,
             icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
             supportsEnhancement,
+            itemType,
           };
         })
     );

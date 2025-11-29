@@ -68,6 +68,7 @@ export default function Home() {
   const [itemId, setItemId] = useState("");
   const [subId, setSubId] = useState("0");
   const [itemSupportsEnhancement, setItemSupportsEnhancement] = useState(false);
+  const [itemType, setItemType] = useState<'accessory' | 'equipment' | 'other'>('other');
 
   const { data: status, isLoading: statusLoading } = useQuery<BotStatus>({
     queryKey: ["/api/status"],
@@ -301,9 +302,10 @@ export default function Home() {
               <div>
                 <Label htmlFor="itemSearch">Search Item by Name</Label>
                 <ItemSearch 
-                  onSelect={(id, name, supportsEnhancement) => {
+                  onSelect={(id, name, supportsEnhancement, itemTypeValue) => {
                     setItemId(id.toString());
                     setItemSupportsEnhancement(supportsEnhancement);
+                    setItemType(itemTypeValue);
                     if (!supportsEnhancement) {
                       setSubId("0");
                     }
@@ -331,21 +333,25 @@ export default function Home() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="0">Base</SelectItem>
-                      <SelectItem value="1">+1</SelectItem>
-                      <SelectItem value="2">+2</SelectItem>
-                      <SelectItem value="3">+3</SelectItem>
-                      <SelectItem value="4">+4</SelectItem>
-                      <SelectItem value="5">+5</SelectItem>
-                      <SelectItem value="6">+6</SelectItem>
-                      <SelectItem value="7">+7</SelectItem>
-                      <SelectItem value="8">+8</SelectItem>
-                      <SelectItem value="9">+9</SelectItem>
-                      <SelectItem value="10">+10</SelectItem>
-                      <SelectItem value="11">+11</SelectItem>
-                      <SelectItem value="12">+12</SelectItem>
-                      <SelectItem value="13">+13</SelectItem>
-                      <SelectItem value="14">+14</SelectItem>
-                      <SelectItem value="15">+15</SelectItem>
+                      {itemType === 'equipment' && (
+                        <>
+                          <SelectItem value="1">+1</SelectItem>
+                          <SelectItem value="2">+2</SelectItem>
+                          <SelectItem value="3">+3</SelectItem>
+                          <SelectItem value="4">+4</SelectItem>
+                          <SelectItem value="5">+5</SelectItem>
+                          <SelectItem value="6">+6</SelectItem>
+                          <SelectItem value="7">+7</SelectItem>
+                          <SelectItem value="8">+8</SelectItem>
+                          <SelectItem value="9">+9</SelectItem>
+                          <SelectItem value="10">+10</SelectItem>
+                          <SelectItem value="11">+11</SelectItem>
+                          <SelectItem value="12">+12</SelectItem>
+                          <SelectItem value="13">+13</SelectItem>
+                          <SelectItem value="14">+14</SelectItem>
+                          <SelectItem value="15">+15</SelectItem>
+                        </>
+                      )}
                       <SelectItem value="16">PRI</SelectItem>
                       <SelectItem value="17">DUO</SelectItem>
                       <SelectItem value="18">TRI</SelectItem>
