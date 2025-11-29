@@ -128,36 +128,69 @@ export interface SearchResult {
   icon: string;
 }
 
+// Cache for the full item database
+let itemDatabaseCache: any[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+async function loadItemDatabase(): Promise<any[]> {
+  // Return cached database if still valid
+  if (itemDatabaseCache && Date.now() - cacheTimestamp < CACHE_DURATION) {
+    return itemDatabaseCache;
+  }
+
+  try {
+    // Fetch full item database from Arsha.io
+    const url = `${BASE_URL}/util/db?lang=en`;
+    console.log(`Fetching item database from ${url}...`);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      console.error(`Failed to fetch item database: ${response.status} ${response.statusText}`);
+      return itemDatabaseCache || [];
+    }
+    
+    const data = await response.json();
+    
+    if (Array.isArray(data)) {
+      itemDatabaseCache = data;
+      cacheTimestamp = Date.now();
+      console.log(`Loaded ${data.length} items into cache`);
+      return data;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Error loading item database:", error);
+    return itemDatabaseCache || [];
+  }
+}
+
 export async function searchItems(query: string): Promise<SearchResult[]> {
   try {
     if (!query || query.length < 2) {
       return [];
     }
 
-    // Use Arsha.io search endpoint - /v2/{region}/{lang}/search?search={query}
-    const url = `${BASE_URL}/v2/${REGION}/en/search?search=${encodeURIComponent(query)}`;
-    const response = await fetch(url);
+    const database = await loadItemDatabase();
     
-    if (!response.ok) {
-      console.error(`BDO API search error: ${response.status} ${response.statusText}`);
-      return [];
-    }
-    
-    const data = await response.json();
-    
-    if (!Array.isArray(data)) {
+    if (database.length === 0) {
       return [];
     }
 
-    // Map search results to our format
-    const results = data
+    // Search locally in the cached database
+    const query_lower = query.toLowerCase();
+    const results = database
+      .filter((item: any) => {
+        const name = item.name || item.itemName || "";
+        return name.toLowerCase().includes(query_lower) && item.id;
+      })
       .slice(0, 15) // Limit to 15 results
       .map((item: any) => ({
-        id: item.id || item.itemId,
+        id: item.id,
         name: item.name || item.itemName,
-        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id || item.itemId}.png`,
-      }))
-      .filter((item: any) => item.id && item.name); // Filter out invalid results
+        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
+      }));
 
     return results;
   } catch (error) {
