@@ -62,6 +62,7 @@ export async function registerRoutes(
         secure: false, // Set to true if using HTTPS
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: true,
+        sameSite: 'lax', // Required for modern browsers to send cookies
       },
     })
   );
