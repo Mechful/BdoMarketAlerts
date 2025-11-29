@@ -99,11 +99,19 @@ export async function registerRoutes(
         secure: false,
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: false,
-        sameSite: false,
+        sameSite: 'lax',
         path: '/',
       },
     })
   );
+
+  // Ensure cookie is sent on login response
+  app.use((req, res, next) => {
+    if (req.session && req.session.authenticated === true) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+    next();
+  });
 
   // Login route
   app.post("/api/auth/login", (req, res) => {
