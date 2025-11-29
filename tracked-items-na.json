@@ -7,5 +7,14 @@
     "lastStock": 0,
     "lastSoldTime": 1582405739,
     "addedAt": 1764407298147
+  },
+  {
+    "id": 14702,
+    "sid": 0,
+    "name": "Dandelion Greatsword",
+    "lastPrice": 259000000,
+    "lastStock": 0,
+    "lastSoldTime": 1764400225,
+    "addedAt": 1764407431504
   }
 ]

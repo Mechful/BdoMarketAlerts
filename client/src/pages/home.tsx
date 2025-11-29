@@ -88,26 +88,19 @@ export default function Home() {
     }
   }, [currentRegion?.region]);
 
-  const { data: items, isLoading: itemsLoading } = useQuery<TrackedItem[]>({
+  const { data: items, isLoading: itemsLoading, refetch: refetchItems } = useQuery<TrackedItem[]>({
     queryKey: ["/api/items", selectedRegion],
     refetchInterval: 30000,
-    enabled: !!selectedRegion,
   });
-
-  // Debug: Log items whenever they change
-  useEffect(() => {
-    console.log("Items updated for region", selectedRegion, ":", items);
-  }, [items, selectedRegion]);
 
   const addItemMutation = useMutation({
     mutationFn: async (data: { id: number; sid: number }) => {
       return apiRequest("POST", "/api/items", data);
     },
     onSuccess: async () => {
-      // Refetch with exact query key including current region
-      console.log("Add item success, refetching with region:", selectedRegion);
-      await queryClient.refetchQueries({ queryKey: ["/api/items", selectedRegion] });
-      await queryClient.refetchQueries({ queryKey: ["/api/status"] });
+      // Immediately refetch items and status
+      await refetchItems();
+      await queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       setItemId("");
       setSubId("0");
       toast({
@@ -129,10 +122,9 @@ export default function Home() {
       return apiRequest("DELETE", `/api/items/${data.id}?sid=${data.sid}`);
     },
     onSuccess: async () => {
-      // Refetch with exact query key including current region
-      console.log("Remove item success, refetching with region:", selectedRegion);
-      await queryClient.refetchQueries({ queryKey: ["/api/items", selectedRegion] });
-      await queryClient.refetchQueries({ queryKey: ["/api/status"] });
+      // Immediately refetch items and status
+      await refetchItems();
+      await queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       toast({
         title: "Item Removed",
         description: "The item has been removed from your watchlist.",
@@ -175,8 +167,7 @@ export default function Home() {
       return apiRequest("POST", "/api/check-prices");
     },
     onSuccess: async () => {
-      console.log("Check prices success, refetching with region:", selectedRegion);
-      await queryClient.refetchQueries({ queryKey: ["/api/items", selectedRegion] });
+      await refetchItems();
       toast({
         title: "Prices Checked",
         description: "All item prices have been refreshed.",

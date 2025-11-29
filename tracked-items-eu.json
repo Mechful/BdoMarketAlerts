@@ -25,5 +25,14 @@
     "lastStock": 0,
     "lastSoldTime": 1764330492,
     "addedAt": 1764407275456
+  },
+  {
+    "id": 10010,
+    "sid": 0,
+    "name": "Kzarka Longsword",
+    "lastPrice": 259000000,
+    "lastStock": 0,
+    "lastSoldTime": 1764405534,
+    "addedAt": 1764407452880
   }
 ]
