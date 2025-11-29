@@ -120,9 +120,10 @@ export default function Home() {
     mutationFn: async (data: { id: number; sid: number }) => {
       return apiRequest("DELETE", `/api/items/${data.id}?sid=${data.sid}`);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
-      queryClient.invalidateQueries({ queryKey: ["/api/status"] });
+    onSuccess: async () => {
+      // Refetch items for all regions and status
+      await queryClient.refetchQueries({ queryKey: ["/api/items"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/status"] });
       toast({
         title: "Item Removed",
         description: "The item has been removed from your watchlist.",
