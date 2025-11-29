@@ -75,8 +75,7 @@ function isRateLimited(req: Request): boolean {
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
-  console.log("Auth middleware - Session ID:", req.sessionID, "Auth value:", req.session?.authenticated);
-  if (req.session?.authenticated === true) {
+  if (req.session && req.session.authenticated === true) {
     next();
   } else {
     res.status(401).json({ error: "Unauthorized" });
@@ -89,9 +88,10 @@ export async function registerRoutes(
 ): Promise<Server> {
   
   // Setup session middleware
+  const sessionStore = new SessionStore({ checkPeriod: 3600000 });
   app.use(
     session({
-      store: new SessionStore(),
+      store: sessionStore,
       secret: process.env.SESSION_SECRET || "your-secret-key",
       resave: true,
       saveUninitialized: true,
@@ -100,6 +100,7 @@ export async function registerRoutes(
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: false,
         sameSite: false,
+        path: '/',
       },
     })
   );
@@ -127,14 +128,9 @@ export async function registerRoutes(
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
-      req.session!.save((saveErr) => {
-        loginAttempts.delete(getRateLimitKey(req));
-        if (saveErr) {
-          console.error("Failed to save session:", saveErr);
-          return res.status(500).json({ error: "Login failed" });
-        }
-        res.json({ success: true });
-      });
+      req.session!.userid = "authenticated_user";
+      loginAttempts.delete(getRateLimitKey(req));
+      res.json({ success: true });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
