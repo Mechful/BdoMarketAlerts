@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ItemSearch } from "@/components/item-search";
 import { Bot, Package, Clock, Globe, CheckCircle, Plus, Trash2, AlertCircle, RefreshCw, Activity, LogOut } from "lucide-react";
-import { SiDiscord } from "react-icons/si";
 
 interface BotStatus {
   status: string;
@@ -186,9 +185,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-md bg-[#5865F2]">
-              <SiDiscord className="h-8 w-8 text-white" />
-            </div>
+            <img src="/logo.png" alt="BDO Market Alert" className="h-12 w-12" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">BDO Market Alert</h1>
               <p className="text-muted-foreground">Black Desert Online Marketplace Alerts Tracker</p>
