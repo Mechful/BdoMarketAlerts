@@ -166,14 +166,19 @@ function getItemType(itemName: string): 'accessory' | 'equipment' | 'other' {
 function getMaxEnhancementLevel(itemName: string, itemType: 'accessory' | 'equipment' | 'other'): number {
   const lowerName = itemName.toLowerCase();
   
-  // Accessories: base to PEN (0-20)
-  if (itemType === 'accessory') {
-    return 20;
+  // Preonne accessories: base to +10 (0-10)
+  if (lowerName.includes('preonne')) {
+    return 10;
   }
   
-  // Special 4 pieces: base to PEN (0-20)
+  // Special 4 pieces: base to +5 (0-5)
   const specialPieces = ["dahn's gloves", "ator's shoes", "fallen god's armor", "labreska's helmet"];
   if (specialPieces.some(piece => lowerName.includes(piece))) {
+    return 5;
+  }
+  
+  // Accessories: base to PEN (0-20)
+  if (itemType === 'accessory') {
     return 20;
   }
   

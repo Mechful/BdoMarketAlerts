@@ -14,7 +14,7 @@
     "name": "Crystallized Energy of Endtimes",
     "lastPrice": 30000000,
     "lastStock": 0,
-    "lastSoldTime": 1764409760,
+    "lastSoldTime": 1764410342,
     "addedAt": 1764409092776
   },
   {
@@ -22,8 +22,44 @@
     "sid": 0,
     "name": "Herald's Crystal",
     "lastPrice": 37000000,
-    "lastStock": 843,
-    "lastSoldTime": 1764409746,
+    "lastStock": 739,
+    "lastSoldTime": 1764410214,
     "addedAt": 1764409106439
+  },
+  {
+    "id": 719898,
+    "sid": 1,
+    "name": "Fallen God's Armor",
+    "lastPrice": 9200000000,
+    "lastStock": 2,
+    "lastSoldTime": 1764380714,
+    "addedAt": 1764410583179
+  },
+  {
+    "id": 719899,
+    "sid": 5,
+    "name": "Dahn's Gloves",
+    "lastPrice": 1720000000000,
+    "lastStock": 0,
+    "lastSoldTime": 1754882009,
+    "addedAt": 1764410609049
+  },
+  {
+    "id": 705533,
+    "sid": 10,
+    "name": "Preonne Necklace",
+    "lastPrice": 342000000000,
+    "lastStock": 0,
+    "lastSoldTime": 1764292656,
+    "addedAt": 1764410681251
+  },
+  {
+    "id": 705533,
+    "sid": 11,
+    "name": "Preonne Necklace",
+    "lastPrice": 3640000000,
+    "lastStock": 0,
+    "lastSoldTime": 1764403173,
+    "addedAt": 1764410697926
   }
 ]
