@@ -11,6 +11,13 @@ import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ItemSearch } from "@/components/item-search";
 import { Bot, Package, Clock, Globe, CheckCircle, Plus, Trash2, AlertCircle, RefreshCw, Activity, LogOut } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BotStatus {
   status: string;
@@ -311,16 +318,36 @@ export default function Home() {
                     data-testid="input-item-id"
                   />
                 </div>
-                <div className="w-24">
-                  <Label htmlFor="subId">Enhancement</Label>
-                  <Input
-                    id="subId"
-                    type="number"
-                    placeholder="0"
-                    value={subId}
-                    onChange={(e) => setSubId(e.target.value)}
-                    data-testid="input-sub-id"
-                  />
+                <div className="w-32">
+                  <Label htmlFor="enhancement">Enhancement</Label>
+                  <Select value={subId} onValueChange={setSubId}>
+                    <SelectTrigger id="enhancement" data-testid="select-enhancement">
+                      <SelectValue placeholder="Select enhancement" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Base</SelectItem>
+                      <SelectItem value="1">+1</SelectItem>
+                      <SelectItem value="2">+2</SelectItem>
+                      <SelectItem value="3">+3</SelectItem>
+                      <SelectItem value="4">+4</SelectItem>
+                      <SelectItem value="5">+5</SelectItem>
+                      <SelectItem value="6">+6</SelectItem>
+                      <SelectItem value="7">+7</SelectItem>
+                      <SelectItem value="8">+8</SelectItem>
+                      <SelectItem value="9">+9</SelectItem>
+                      <SelectItem value="10">+10</SelectItem>
+                      <SelectItem value="11">+11</SelectItem>
+                      <SelectItem value="12">+12</SelectItem>
+                      <SelectItem value="13">+13</SelectItem>
+                      <SelectItem value="14">+14</SelectItem>
+                      <SelectItem value="15">+15</SelectItem>
+                      <SelectItem value="16">PRI</SelectItem>
+                      <SelectItem value="17">DUO</SelectItem>
+                      <SelectItem value="18">TRI</SelectItem>
+                      <SelectItem value="19">TET</SelectItem>
+                      <SelectItem value="20">PEN</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button 
                   type="submit" 
