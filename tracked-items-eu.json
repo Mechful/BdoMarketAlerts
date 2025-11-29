@@ -7,5 +7,14 @@
     "lastStock": 5191,
     "lastSoldTime": 1764367099,
     "addedAt": 1764407859409
+  },
+  {
+    "id": 15252,
+    "sid": 0,
+    "name": "Ultimate Combined Magic Crystal - Macalod",
+    "lastPrice": 1000000000,
+    "lastStock": 0,
+    "lastSoldTime": 1764402609,
+    "addedAt": 1764407989915
   }
 ]

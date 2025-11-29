@@ -94,13 +94,25 @@ export default function Home() {
     staleTime: 0,
   });
 
+  // Debug: Log items whenever they change
+  useEffect(() => {
+    console.log("Items state:", {
+      items,
+      itemsLoading,
+      itemsLength: items?.length,
+      selectedRegion
+    });
+  }, [items, itemsLoading, selectedRegion]);
+
   const addItemMutation = useMutation({
     mutationFn: async (data: { id: number; sid: number }) => {
       return apiRequest("POST", "/api/items", data);
     },
     onSuccess: async () => {
       // Immediately refetch items and status
-      await refetchItems();
+      console.log("Add success - refetching items");
+      const result = await refetchItems();
+      console.log("Refetch result:", result);
       await queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       setItemId("");
       setSubId("0");
@@ -110,6 +122,7 @@ export default function Home() {
       });
     },
     onError: (error: any) => {
+      console.error("Add error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to add item. Check the ID and try again.",
@@ -439,7 +452,7 @@ export default function Home() {
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : items && items.length > 0 ? (
+            ) : items && Array.isArray(items) && items.length > 0 ? (
               <div className="space-y-3">
                 {items.map((item) => (
                   <div
