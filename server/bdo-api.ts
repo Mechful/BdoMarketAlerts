@@ -104,6 +104,7 @@ export interface SearchResult {
   icon: string;
   supportsEnhancement: boolean;
   itemType: 'accessory' | 'equipment' | 'other';
+  maxEnhancement: number;
 }
 
 // Cache for the full item database
@@ -162,6 +163,33 @@ function getItemType(itemName: string): 'accessory' | 'equipment' | 'other' {
   return 'other';
 }
 
+function getMaxEnhancementLevel(itemName: string, itemType: 'accessory' | 'equipment' | 'other'): number {
+  const lowerName = itemName.toLowerCase();
+  
+  // Accessories: base to PEN (0-20)
+  if (itemType === 'accessory') {
+    return 20;
+  }
+  
+  // Special 4 pieces: base to PEN (0-20)
+  const specialPieces = ["dahn's gloves", "ator's shoes", "fallen god's armor", "labreska's helmet"];
+  if (specialPieces.some(piece => lowerName.includes(piece))) {
+    return 20;
+  }
+  
+  // Krogdalo gear: base to +10 (0-10)
+  if (lowerName.includes('krogdalo')) {
+    return 10;
+  }
+  
+  // Default equipment: base to +15 (0-15)
+  if (itemType === 'equipment') {
+    return 15;
+  }
+  
+  return 0;
+}
+
 function canItemBeEnhanced(itemName: string, itemId: number, maxEnhance: number): boolean {
   // If Arsha API provides maxEnhance > 0, trust that
   if (maxEnhance > 0) {
@@ -216,6 +244,7 @@ export async function searchItems(query: string, region: string = DEFAULT_REGION
           const maxEnhance = itemInfo ? (itemInfo.maxEnhance || 0) : 0;
           const supportsEnhancement = canItemBeEnhanced(item.name, item.id, maxEnhance);
           const itemType = getItemType(item.name);
+          const maxEnhancementLevel = getMaxEnhancementLevel(item.name, itemType);
           
           return {
             id: item.id,
@@ -223,6 +252,7 @@ export async function searchItems(query: string, region: string = DEFAULT_REGION
             icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
             supportsEnhancement,
             itemType,
+            maxEnhancement: maxEnhancementLevel,
           };
         })
     );

@@ -71,6 +71,7 @@ export default function Home() {
   const [subId, setSubId] = useState("0");
   const [itemSupportsEnhancement, setItemSupportsEnhancement] = useState(false);
   const [itemType, setItemType] = useState<'accessory' | 'equipment' | 'other'>('other');
+  const [maxEnhancementLevel, setMaxEnhancementLevel] = useState(0);
 
   const { data: status, isLoading: statusLoading } = useQuery<BotStatus>({
     queryKey: ["/api/status"],
@@ -344,12 +345,13 @@ export default function Home() {
               <div>
                 <Label htmlFor="itemSearch">Search Item by Name</Label>
                 <ItemSearch 
-                  onSelect={(id, name, supportsEnhancement, itemTypeValue) => {
+                  onSelect={(id, name, supportsEnhancement, itemTypeValue, maxEnhancement) => {
                     setItemId(id.toString());
                     setItemName(name);
                     setItemIcon(`https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${id}.png`);
                     setItemSupportsEnhancement(supportsEnhancement);
                     setItemType(itemTypeValue);
+                    setMaxEnhancementLevel(maxEnhancement);
                     if (!supportsEnhancement) {
                       setSubId("0");
                     }
@@ -360,6 +362,7 @@ export default function Home() {
                     setItemIcon("");
                     setItemSupportsEnhancement(false);
                     setItemType('other');
+                    setMaxEnhancementLevel(0);
                   }}
                   placeholder="e.g. Iron Ore, Mushroom, Essence..."
                   selectedId={itemId}
@@ -387,7 +390,7 @@ export default function Home() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="0">Base</SelectItem>
-                      {itemType === 'equipment' && (
+                      {maxEnhancementLevel >= 1 && (
                         <>
                           <SelectItem value="1">+1</SelectItem>
                           <SelectItem value="2">+2</SelectItem>
@@ -399,6 +402,10 @@ export default function Home() {
                           <SelectItem value="8">+8</SelectItem>
                           <SelectItem value="9">+9</SelectItem>
                           <SelectItem value="10">+10</SelectItem>
+                        </>
+                      )}
+                      {maxEnhancementLevel >= 11 && (
+                        <>
                           <SelectItem value="11">+11</SelectItem>
                           <SelectItem value="12">+12</SelectItem>
                           <SelectItem value="13">+13</SelectItem>
@@ -406,11 +413,15 @@ export default function Home() {
                           <SelectItem value="15">+15</SelectItem>
                         </>
                       )}
-                      <SelectItem value="16">PRI</SelectItem>
-                      <SelectItem value="17">DUO</SelectItem>
-                      <SelectItem value="18">TRI</SelectItem>
-                      <SelectItem value="19">TET</SelectItem>
-                      <SelectItem value="20">PEN</SelectItem>
+                      {maxEnhancementLevel >= 16 && (
+                        <>
+                          <SelectItem value="16">PRI</SelectItem>
+                          <SelectItem value="17">DUO</SelectItem>
+                          <SelectItem value="18">TRI</SelectItem>
+                          <SelectItem value="19">TET</SelectItem>
+                          <SelectItem value="20">PEN</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

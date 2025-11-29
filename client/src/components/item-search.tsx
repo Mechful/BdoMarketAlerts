@@ -10,10 +10,11 @@ interface SearchResult {
   icon: string;
   supportsEnhancement: boolean;
   itemType: 'accessory' | 'equipment' | 'other';
+  maxEnhancement: number;
 }
 
 interface ItemSearchProps {
-  onSelect: (id: number, name: string, supportsEnhancement: boolean, itemType: 'accessory' | 'equipment' | 'other') => void;
+  onSelect: (id: number, name: string, supportsEnhancement: boolean, itemType: 'accessory' | 'equipment' | 'other', maxEnhancement: number) => void;
   placeholder?: string;
   selectedId?: string;
   selectedName?: string;
@@ -64,8 +65,8 @@ export function ItemSearch({ onSelect, placeholder = "Search item name...", sele
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (id: number, name: string, supportsEnhancement: boolean, itemType: 'accessory' | 'equipment' | 'other') => {
-    onSelect(id, name, supportsEnhancement, itemType);
+  const handleSelect = (id: number, name: string, supportsEnhancement: boolean, itemType: 'accessory' | 'equipment' | 'other', maxEnhancement: number) => {
+    onSelect(id, name, supportsEnhancement, itemType, maxEnhancement);
     setQuery("");
     setResults([]);
     setIsOpen(false);
@@ -129,7 +130,7 @@ export function ItemSearch({ onSelect, placeholder = "Search item name...", sele
               {results.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleSelect(item.id, item.name, item.supportsEnhancement, item.itemType)}
+                  onClick={() => handleSelect(item.id, item.name, item.supportsEnhancement, item.itemType, item.maxEnhancement)}
                   className="w-full flex items-center gap-3 p-3 hover-elevate transition-colors text-left"
                   data-testid={`search-result-${item.id}`}
                 >
