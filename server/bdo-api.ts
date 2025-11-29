@@ -167,6 +167,38 @@ async function loadItemDatabase(): Promise<any[]> {
   }
 }
 
+function canItemBeEnhanced(itemName: string, itemId: number, maxEnhance: number): boolean {
+  // If Arsha API provides maxEnhance > 0, trust that
+  if (maxEnhance > 0) {
+    return true;
+  }
+  
+  // Check item name for keywords that indicate enhancement support
+  const lowerName = itemName.toLowerCase();
+  
+  // Accessories that support PRI/DUO/TRI/TET/PEN (enhancement levels 16-20)
+  const accessoryKeywords = ['ring', 'earring', 'necklace', 'belt', 'bracelet', 'brooch'];
+  if (accessoryKeywords.some(keyword => lowerName.includes(keyword))) {
+    return true;
+  }
+  
+  // Weapons and armor typically support enhancements (exclude materials)
+  const enhancementBlocklist = ['ore', 'stone', 'shard', 'crystal', 'powder', 'fragment', 'hide', 'blood', 'leather', 'ingot', 'wood', 'timber', 'plywood', 'flux', 'ash', 'elixir', 'essence', 'poison'];
+  
+  if (enhancementBlocklist.some(keyword => lowerName.includes(keyword))) {
+    return false;
+  }
+  
+  // If the name contains equipment-like keywords, likely enhanceable
+  const equipmentKeywords = ['sword', 'dagger', 'axe', 'mace', 'spear', 'bow', 'staff', 'armor', 'helmet', 'chest', 'gloves', 'legs', 'boots', 'shield', 'helm', 'plate', 'leather'];
+  if (equipmentKeywords.some(keyword => lowerName.includes(keyword))) {
+    return true;
+  }
+  
+  // Default to false for unknown items
+  return false;
+}
+
 export async function searchItems(query: string): Promise<SearchResult[]> {
   try {
     if (!query || query.length < 2) {
@@ -195,7 +227,8 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
         .map(async (item: any) => {
           // Fetch item info to determine if it supports enhancement
           const itemInfo = await getItemInfo(item.id, 0);
-          const supportsEnhancement = itemInfo ? (itemInfo.maxEnhance || 0) > 0 : false;
+          const maxEnhance = itemInfo ? (itemInfo.maxEnhance || 0) : 0;
+          const supportsEnhancement = canItemBeEnhanced(item.name, item.id, maxEnhance);
           
           return {
             id: item.id,
