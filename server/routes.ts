@@ -18,10 +18,14 @@ import { createTestAlertEmbed, sendWebhookMessage } from "./discord-embeds";
 const SessionStore = MemoryStore(session);
 
 // Load credentials from environment variables (stored securely in Secrets)
-const VALID_USERNAME = process.env.BOT_USERNAME || "admin";
-const VALID_PASSWORD = process.env.BOT_PASSWORD || "admin123";
+const VALID_USERNAME = process.env.BOT_USERNAME || "";
+const VALID_PASSWORD = process.env.BOT_PASSWORD || "";
 
-console.log("✓ Auth configured - Username set:", !!process.env.BOT_USERNAME, "Password set:", !!process.env.BOT_PASSWORD);
+if (!VALID_USERNAME || !VALID_PASSWORD) {
+  console.error("❌ ERROR: BOT_USERNAME and BOT_PASSWORD secrets are not set in Replit Secrets!");
+  console.error("Please add them to your Secrets tab before trying to login.");
+}
+console.log("✓ Auth configured - Username length:", VALID_USERNAME.length, "Password length:", VALID_PASSWORD.length);
 
 const addItemSchema = z.object({
   id: z.number().int().positive(),
@@ -72,11 +76,11 @@ export async function registerRoutes(
     
     const { username, password } = result.data;
     
-    // Accept either the configured secrets OR the fallback defaults
-    const isValidSecrets = username === VALID_USERNAME && password === VALID_PASSWORD;
-    const isDefaultCreds = username === "admin" && password === "admin123";
+    // Check if credentials match (use trim to remove any accidental whitespace)
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
     
-    if (isValidSecrets || isDefaultCreds) {
+    if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
       res.json({ success: true });
     } else {
