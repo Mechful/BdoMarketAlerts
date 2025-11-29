@@ -8,7 +8,8 @@ let monitorInterval: NodeJS.Timeout | null = null;
 export async function checkPrices(): Promise<void> {
   const items = await storage.getTrackedItems();
   
-  if (!items || items.length === 0) {
+  if (items.length === 0) {
+    console.log("No items to check");
     return;
   }
   
@@ -16,10 +17,10 @@ export async function checkPrices(): Promise<void> {
   
   for (const item of items) {
     try {
-      const currentInfo = await getItemInfo(item.itemId, item.sid);
+      const currentInfo = await getItemInfo(item.id, item.sid);
       
       if (!currentInfo) {
-        console.log(`Could not fetch info for item ${item.itemId}:${item.sid}`);
+        console.log(`Could not fetch info for item ${item.id}:${item.sid}`);
         continue;
       }
       
@@ -31,12 +32,8 @@ export async function checkPrices(): Promise<void> {
         
         const alert: PriceAlert = {
           item: {
-            itemId: item.itemId,
-            sid: item.sid,
+            ...item,
             name: currentInfo.name || item.name,
-            lastPrice: newPrice,
-            lastStock: currentInfo.currentStock,
-            lastSoldTime: currentInfo.lastSoldTime,
           },
           oldPrice,
           newPrice,
@@ -51,7 +48,7 @@ export async function checkPrices(): Promise<void> {
         await sendWebhookMessage(embed);
       }
       
-      await storage.updateTrackedItem(item.itemId, item.sid, {
+      await storage.updateTrackedItem(item.id, item.sid, {
         lastPrice: newPrice,
         lastStock: currentInfo.currentStock,
         lastSoldTime: currentInfo.lastSoldTime,
@@ -61,7 +58,7 @@ export async function checkPrices(): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (error) {
-      console.error(`Error checking price for item ${item.itemId}:${item.sid}:`, error);
+      console.error(`Error checking price for item ${item.id}:${item.sid}:`, error);
     }
   }
   

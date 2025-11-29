@@ -1,6 +1,4 @@
-import { type TrackedItem, type InsertTrackedItem, trackedItems } from "@shared/schema";
-import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { type TrackedItem, type InsertTrackedItem } from "@shared/schema";
 
 export interface IStorage {
   getTrackedItems(): Promise<TrackedItem[]>;
@@ -10,89 +8,58 @@ export interface IStorage {
   updateTrackedItem(id: number, sid: number, updates: Partial<TrackedItem>): Promise<TrackedItem | undefined>;
 }
 
-export class DatabaseStorage implements IStorage {
+export class MemStorage implements IStorage {
+  private items: Map<string, TrackedItem>;
+
+  constructor() {
+    this.items = new Map();
+  }
+
+  private getKey(id: number, sid: number): string {
+    return `${id}-${sid}`;
+  }
+
   async getTrackedItems(): Promise<TrackedItem[]> {
-    try {
-      return await db.select().from(trackedItems);
-    } catch (error) {
-      console.error("Error fetching tracked items:", error);
-      return [];
-    }
+    return Array.from(this.items.values());
   }
 
   async getTrackedItem(id: number, sid: number): Promise<TrackedItem | undefined> {
-    try {
-      const results = await db
-        .select()
-        .from(trackedItems)
-        .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
-        .limit(1);
-      return results?.[0];
-    } catch (error) {
-      console.error("Error getting tracked item:", error);
-      return undefined;
-    }
+    return this.items.get(this.getKey(id, sid));
   }
 
   async addTrackedItem(item: InsertTrackedItem): Promise<TrackedItem> {
-    try {
-      const now = Date.now();
-      const result = await db
-        .insert(trackedItems)
-        .values({
-          itemId: item.itemId,
-          sid: item.sid,
-          name: item.name,
-          lastPrice: item.lastPrice,
-          lastStock: item.lastStock,
-          lastSoldTime: item.lastSoldTime,
-          addedAt: now,
-        })
-        .returning();
-      return result[0];
-    } catch (error) {
-      console.error("Error adding tracked item:", error);
-      throw error;
-    }
+    const trackedItem: TrackedItem = {
+      ...item,
+      addedAt: Date.now(),
+    };
+    this.items.set(this.getKey(item.id, item.sid), trackedItem);
+    return trackedItem;
   }
 
   async removeTrackedItem(id: number, sid?: number): Promise<boolean> {
-    try {
-      if (sid !== undefined) {
-        const result = await db
-          .delete(trackedItems)
-          .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)));
-        return result.rowCount > 0;
-      }
-
-      const result = await db
-        .delete(trackedItems)
-        .where(eq(trackedItems.itemId, id));
-      return result.rowCount > 0;
-    } catch (error) {
-      console.error("Error removing tracked item:", error);
-      return false;
+    if (sid !== undefined) {
+      return this.items.delete(this.getKey(id, sid));
     }
+    
+    let removed = false;
+    for (const [key, item] of this.items.entries()) {
+      if (item.id === id) {
+        this.items.delete(key);
+        removed = true;
+      }
+    }
+    return removed;
   }
 
   async updateTrackedItem(id: number, sid: number, updates: Partial<TrackedItem>): Promise<TrackedItem | undefined> {
-    try {
-      const result = await db
-        .update(trackedItems)
-        .set({
-          lastPrice: updates.lastPrice,
-          lastStock: updates.lastStock,
-          lastSoldTime: updates.lastSoldTime,
-          name: updates.name,
-        })
-        .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
-        .returning();
-      return result?.[0];
-    } catch (error) {
-      console.error("Error updating tracked item:", error);
-      return undefined;
-    }
+    const key = this.getKey(id, sid);
+    const existing = this.items.get(key);
+    if (!existing) return undefined;
+    
+    const updated: TrackedItem = { ...existing, ...updates };
+    this.items.set(key, updated);
+    return updated;
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();

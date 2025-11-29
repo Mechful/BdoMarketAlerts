@@ -75,7 +75,7 @@ function isRateLimited(req: Request): boolean {
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (req.session && req.session.authenticated === true) {
+  if (req.session?.authenticated) {
     next();
   } else {
     res.status(401).json({ error: "Unauthorized" });
@@ -87,32 +87,21 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
-  // Setup session middleware with MemoryStore
-  const memStore = new SessionStore({
-    checkPeriod: 3600000,
-  });
-
+  // Setup session middleware
   app.use(
     session({
-      store: memStore,
+      store: new SessionStore(),
       secret: process.env.SESSION_SECRET || "your-secret-key",
-      resave: true,
+      resave: false,
       saveUninitialized: true,
       cookie: { 
-        secure: false,
-        maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: false,
-        sameSite: 'lax',
-        path: '/',
+        secure: false, // Set to true if using HTTPS
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+        sameSite: 'lax', // Required for modern browsers to send cookies
       },
     })
   );
-  
-  // Debug middleware to log session info
-  app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] Session ID: ${req.sessionID}, Auth: ${req.session?.authenticated || 'false'}`);
-    next();
-  });
 
   // Login route
   app.post("/api/auth/login", (req, res) => {
@@ -137,19 +126,9 @@ export async function registerRoutes(
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
-      req.session!.userid = "authenticated_user";
+      // Clear rate limit on successful login
       loginAttempts.delete(getRateLimitKey(req));
-      console.log(`[LOGIN] Session ID before save: ${req.sessionID}, setting auth to true`);
-      
-      // Explicitly save the session to ensure cookie is sent
-      req.session!.save((err) => {
-        if (err) {
-          console.error("[LOGIN] Session save failed:", err);
-          return res.status(500).json({ error: "Failed to create session" });
-        }
-        console.log(`[LOGIN] Session saved with ID: ${req.sessionID}`);
-        res.json({ success: true });
-      });
+      res.json({ success: true });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
@@ -229,7 +208,7 @@ export async function registerRoutes(
       }
       
       const item = await storage.addTrackedItem({
-        itemId: itemInfo.id,
+        id: itemInfo.id,
         sid: sid,
         name: itemInfo.name,
         lastPrice: itemInfo.lastSoldPrice,

@@ -1,24 +1,19 @@
-import { pgTable, serial, integer, text, bigint } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const trackedItems = pgTable("tracked_items", {
-  id: serial("id").primaryKey(),
-  itemId: integer("item_id").notNull(),
-  sid: integer("sid").notNull(),
-  name: text("name").notNull(),
-  lastPrice: integer("last_price").notNull(),
-  lastStock: integer("last_stock").notNull(),
-  lastSoldTime: bigint("last_sold_time", { mode: "number" }).notNull(),
-  addedAt: bigint("added_at", { mode: "number" }).notNull(),
+export const trackedItemSchema = z.object({
+  id: z.number(),
+  sid: z.number(),
+  name: z.string(),
+  lastPrice: z.number(),
+  lastStock: z.number(),
+  lastSoldTime: z.number(),
+  addedAt: z.number(),
 });
 
-export type TrackedItem = typeof trackedItems.$inferSelect;
-export type InsertTrackedItem = typeof trackedItems.$inferInsert;
+export type TrackedItem = z.infer<typeof trackedItemSchema>;
 
-export const insertTrackedItemSchema = createInsertSchema(trackedItems)
-  .omit({ id: true, addedAt: true })
-  .refine((data) => data.itemId !== undefined && data.sid !== undefined);
+export const insertTrackedItemSchema = trackedItemSchema.omit({ addedAt: true });
+export type InsertTrackedItem = z.infer<typeof insertTrackedItemSchema>;
 
 export const bdoItemInfoSchema = z.object({
   id: z.number(),
@@ -38,14 +33,7 @@ export const bdoItemInfoSchema = z.object({
 export type BdoItemInfo = z.infer<typeof bdoItemInfoSchema>;
 
 export const priceAlertSchema = z.object({
-  item: z.object({
-    itemId: z.number(),
-    sid: z.number(),
-    name: z.string(),
-    lastPrice: z.number(),
-    lastStock: z.number(),
-    lastSoldTime: z.number(),
-  }),
+  item: trackedItemSchema,
   oldPrice: z.number(),
   newPrice: z.number(),
   priceChange: z.enum(["increase", "decrease"]),

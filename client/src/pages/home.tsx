@@ -24,7 +24,6 @@ interface BotStatus {
 
 interface TrackedItem {
   id: number;
-  itemId: number;
   sid: number;
   name: string;
   lastPrice: number;
@@ -97,8 +96,8 @@ export default function Home() {
   });
 
   const removeItemMutation = useMutation({
-    mutationFn: async (data: { itemId: number; sid: number }) => {
-      return apiRequest("DELETE", `/api/items/${data.itemId}?sid=${data.sid}`);
+    mutationFn: async (data: { id: number; sid: number }) => {
+      return apiRequest("DELETE", `/api/items/${data.id}?sid=${data.sid}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/items"] });
@@ -406,9 +405,9 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeItemMutation.mutate({ itemId: item.itemId, sid: item.sid })}
+                        onClick={() => removeItemMutation.mutate({ id: item.id, sid: item.sid })}
                         disabled={removeItemMutation.isPending}
-                        data-testid={`button-remove-${item.itemId}-${item.sid}`}
+                        data-testid={`button-remove-${item.id}-${item.sid}`}
                       >
                         <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                       </Button>
