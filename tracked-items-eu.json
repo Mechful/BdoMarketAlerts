@@ -16,5 +16,14 @@
     "lastStock": 123,
     "lastSoldTime": 1764401684,
     "addedAt": 1764407164141
+  },
+  {
+    "id": 8519,
+    "sid": 0,
+    "name": "Dried Catfish",
+    "lastPrice": 6850,
+    "lastStock": 0,
+    "lastSoldTime": 1764330492,
+    "addedAt": 1764407275456
   }
 ]

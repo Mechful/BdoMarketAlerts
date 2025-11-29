@@ -91,15 +91,22 @@ export default function Home() {
   const { data: items, isLoading: itemsLoading } = useQuery<TrackedItem[]>({
     queryKey: ["/api/items", selectedRegion],
     refetchInterval: 30000,
+    enabled: !!selectedRegion,
   });
+
+  // Debug: Log items whenever they change
+  useEffect(() => {
+    console.log("Items updated for region", selectedRegion, ":", items);
+  }, [items, selectedRegion]);
 
   const addItemMutation = useMutation({
     mutationFn: async (data: { id: number; sid: number }) => {
       return apiRequest("POST", "/api/items", data);
     },
     onSuccess: async () => {
-      // Refetch items for all regions and status to ensure UI updates
-      await queryClient.refetchQueries({ queryKey: ["/api/items"] });
+      // Refetch with exact query key including current region
+      console.log("Add item success, refetching with region:", selectedRegion);
+      await queryClient.refetchQueries({ queryKey: ["/api/items", selectedRegion] });
       await queryClient.refetchQueries({ queryKey: ["/api/status"] });
       setItemId("");
       setSubId("0");
@@ -122,8 +129,9 @@ export default function Home() {
       return apiRequest("DELETE", `/api/items/${data.id}?sid=${data.sid}`);
     },
     onSuccess: async () => {
-      // Refetch items for all regions and status
-      await queryClient.refetchQueries({ queryKey: ["/api/items"] });
+      // Refetch with exact query key including current region
+      console.log("Remove item success, refetching with region:", selectedRegion);
+      await queryClient.refetchQueries({ queryKey: ["/api/items", selectedRegion] });
       await queryClient.refetchQueries({ queryKey: ["/api/status"] });
       toast({
         title: "Item Removed",
@@ -167,7 +175,8 @@ export default function Home() {
       return apiRequest("POST", "/api/check-prices");
     },
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["/api/items"] });
+      console.log("Check prices success, refetching with region:", selectedRegion);
+      await queryClient.refetchQueries({ queryKey: ["/api/items", selectedRegion] });
       toast({
         title: "Prices Checked",
         description: "All item prices have been refreshed.",
