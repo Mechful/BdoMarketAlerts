@@ -130,14 +130,7 @@ export async function registerRoutes(
       req.session!.authenticated = true;
       // Clear rate limit on successful login
       loginAttempts.delete(getRateLimitKey(req));
-      // Save session before responding
-      req.session!.save((err) => {
-        if (err) {
-          console.error("Session save error:", err);
-          return res.status(500).json({ error: "Login failed" });
-        }
-        res.json({ success: true });
-      });
+      res.json({ success: true });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
