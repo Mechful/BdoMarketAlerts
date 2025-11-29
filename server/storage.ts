@@ -1,4 +1,6 @@
-import { type TrackedItem, type InsertTrackedItem } from "@shared/schema";
+import { type TrackedItem, type InsertTrackedItem, trackedItems } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   getTrackedItems(): Promise<TrackedItem[]>;
@@ -8,58 +10,63 @@ export interface IStorage {
   updateTrackedItem(id: number, sid: number, updates: Partial<TrackedItem>): Promise<TrackedItem | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private items: Map<string, TrackedItem>;
-
-  constructor() {
-    this.items = new Map();
-  }
-
-  private getKey(id: number, sid: number): string {
-    return `${id}-${sid}`;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getTrackedItems(): Promise<TrackedItem[]> {
-    return Array.from(this.items.values());
+    return db.select().from(trackedItems);
   }
 
   async getTrackedItem(id: number, sid: number): Promise<TrackedItem | undefined> {
-    return this.items.get(this.getKey(id, sid));
+    const results = await db
+      .select()
+      .from(trackedItems)
+      .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
+      .limit(1);
+    return results[0];
   }
 
   async addTrackedItem(item: InsertTrackedItem): Promise<TrackedItem> {
-    const trackedItem: TrackedItem = {
-      ...item,
-      addedAt: Date.now(),
-    };
-    this.items.set(this.getKey(item.id, item.sid), trackedItem);
-    return trackedItem;
+    const now = Date.now();
+    const result = await db
+      .insert(trackedItems)
+      .values({
+        itemId: item.itemId,
+        sid: item.sid,
+        name: item.name,
+        lastPrice: item.lastPrice,
+        lastStock: item.lastStock,
+        lastSoldTime: item.lastSoldTime,
+        addedAt: now,
+      })
+      .returning();
+    return result[0];
   }
 
   async removeTrackedItem(id: number, sid?: number): Promise<boolean> {
     if (sid !== undefined) {
-      return this.items.delete(this.getKey(id, sid));
+      const result = await db
+        .delete(trackedItems)
+        .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)));
+      return result.rowCount > 0;
     }
-    
-    let removed = false;
-    for (const [key, item] of this.items.entries()) {
-      if (item.id === id) {
-        this.items.delete(key);
-        removed = true;
-      }
-    }
-    return removed;
+
+    const result = await db
+      .delete(trackedItems)
+      .where(eq(trackedItems.itemId, id));
+    return result.rowCount > 0;
   }
 
   async updateTrackedItem(id: number, sid: number, updates: Partial<TrackedItem>): Promise<TrackedItem | undefined> {
-    const key = this.getKey(id, sid);
-    const existing = this.items.get(key);
-    if (!existing) return undefined;
-    
-    const updated: TrackedItem = { ...existing, ...updates };
-    this.items.set(key, updated);
-    return updated;
+    const result = await db
+      .update(trackedItems)
+      .set({
+        lastPrice: updates.lastPrice,
+        lastStock: updates.lastStock,
+        lastSoldTime: updates.lastSoldTime,
+      })
+      .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
+      .returning();
+    return result[0];
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
