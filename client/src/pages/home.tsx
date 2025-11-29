@@ -24,6 +24,7 @@ interface BotStatus {
 
 interface TrackedItem {
   id: number;
+  itemId: number;
   sid: number;
   name: string;
   lastPrice: number;
@@ -96,8 +97,8 @@ export default function Home() {
   });
 
   const removeItemMutation = useMutation({
-    mutationFn: async (data: { id: number; sid: number }) => {
-      return apiRequest("DELETE", `/api/items/${data.id}?sid=${data.sid}`);
+    mutationFn: async (data: { itemId: number; sid: number }) => {
+      return apiRequest("DELETE", `/api/items/${data.itemId}?sid=${data.sid}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/items"] });

@@ -126,9 +126,16 @@ export async function registerRoutes(
     
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
-      // Clear rate limit on successful login
-      loginAttempts.delete(getRateLimitKey(req));
-      res.json({ success: true });
+      // Explicitly save the session
+      req.session!.save((err) => {
+        if (err) {
+          console.error("Error saving session:", err);
+          return res.status(500).json({ error: "Login failed" });
+        }
+        // Clear rate limit on successful login
+        loginAttempts.delete(getRateLimitKey(req));
+        res.json({ success: true });
+      });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
