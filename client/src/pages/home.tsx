@@ -190,8 +190,8 @@ export default function Home() {
               <SiDiscord className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">BDO Market Bot</h1>
-              <p className="text-muted-foreground">Black Desert Online Marketplace Price Tracker</p>
+              <h1 className="text-2xl font-bold text-foreground">BDO Market Alert</h1>
+              <p className="text-muted-foreground">Black Desert Online Marketplace Alerts Tracker</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

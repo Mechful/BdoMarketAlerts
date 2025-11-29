@@ -72,9 +72,9 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <SiDiscord className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl">BDO Market Bot</CardTitle>
+          <CardTitle className="text-2xl">BDO Market Alerts</CardTitle>
           <CardDescription>
-            Sign in to access your marketplace price tracker
+            Sign in to access your marketplace Alerts tracker
           </CardDescription>
         </CardHeader>
         <CardContent>
