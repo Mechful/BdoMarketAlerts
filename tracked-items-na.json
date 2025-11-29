@@ -7,5 +7,14 @@
     "lastStock": 6888,
     "lastSoldTime": 1764406382,
     "addedAt": 1764406389633
+  },
+  {
+    "id": 4001,
+    "sid": 0,
+    "name": "Iron Ore",
+    "lastPrice": 1050,
+    "lastStock": 39257,
+    "lastSoldTime": 1764400586,
+    "addedAt": 1764406819713
   }
 ]

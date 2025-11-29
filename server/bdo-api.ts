@@ -214,7 +214,9 @@ export async function searchItems(query: string, region: string = DEFAULT_REGION
     }
 
     // Use BlackDesertMarket API for search - returns only marketplace-tradeable items
-    const url = `https://api.blackdesertmarket.com/search/${encodeURIComponent(query)}?region=${region}&language=en-US`;
+    // API endpoint: GET /search/{search} with query parameters for region and language
+    const regionParam = region.toLowerCase() === 'eu' ? 'eu' : 'na';
+    const url = `https://api.blackdesertmarket.com/search/${encodeURIComponent(query)}?region=${regionParam}`;
     const response = await fetch(url);
     
     if (!response.ok) {
