@@ -80,7 +80,7 @@ export async function registerRoutes(
 
   // Logout route
   app.post("/api/auth/logout", (req, res) => {
-    req.session!.destroy((err) => {
+    req.session?.destroy((err) => {
       if (err) {
         return res.status(500).json({ error: "Failed to logout" });
       }
