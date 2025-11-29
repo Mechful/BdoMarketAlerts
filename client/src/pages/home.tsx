@@ -341,7 +341,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleAddItem} className="space-y-4">
-              <div className="space-y-3">
+              <div>
                 <Label htmlFor="itemSearch">Search Item by Name</Label>
                 <ItemSearch 
                   onSelect={(id, name, supportsEnhancement, itemTypeValue) => {
@@ -354,24 +354,18 @@ export default function Home() {
                       setSubId("0");
                     }
                   }}
+                  onClear={() => {
+                    setItemId("");
+                    setItemName("");
+                    setItemIcon("");
+                    setItemSupportsEnhancement(false);
+                    setItemType('other');
+                  }}
                   placeholder="e.g. Iron Ore, Mushroom, Essence..."
+                  selectedId={itemId}
+                  selectedName={itemName}
+                  selectedIcon={itemIcon}
                 />
-                {itemName && (
-                  <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50 border border-border">
-                    <img 
-                      src={itemIcon} 
-                      alt={itemName} 
-                      className="w-10 h-10 rounded bg-background"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/favicon.png";
-                      }}
-                    />
-                    <div>
-                      <p className="font-medium text-foreground text-sm">{itemName}</p>
-                      <p className="text-xs text-muted-foreground">ID: {itemId}</p>
-                    </div>
-                  </div>
-                )}
               </div>
               <div className="flex flex-wrap items-end gap-4">
                 <div className="flex-1 min-w-[150px]">
