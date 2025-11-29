@@ -80,6 +80,12 @@ export async function registerRoutes(
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
     
+    console.log("Login attempt:");
+    console.log("  Entered username length:", trimmedUsername.length, "Expected:", VALID_USERNAME.length);
+    console.log("  Entered password length:", trimmedPassword.length, "Expected:", VALID_PASSWORD.length);
+    console.log("  Username match:", trimmedUsername === VALID_USERNAME);
+    console.log("  Password match:", trimmedPassword === VALID_PASSWORD);
+    
     if (trimmedUsername === VALID_USERNAME && trimmedPassword === VALID_PASSWORD) {
       req.session!.authenticated = true;
       res.json({ success: true });
