@@ -139,8 +139,17 @@ export async function registerRoutes(
       req.session!.authenticated = true;
       req.session!.userid = "authenticated_user";
       loginAttempts.delete(getRateLimitKey(req));
-      console.log(`[LOGIN] Session created: ${req.sessionID}, setting auth to true`);
-      res.json({ success: true });
+      console.log(`[LOGIN] Session ID before save: ${req.sessionID}, setting auth to true`);
+      
+      // Explicitly save the session to ensure cookie is sent
+      req.session!.save((err) => {
+        if (err) {
+          console.error("[LOGIN] Session save failed:", err);
+          return res.status(500).json({ error: "Failed to create session" });
+        }
+        console.log(`[LOGIN] Session saved with ID: ${req.sessionID}`);
+        res.json({ success: true });
+      });
     } else {
       res.status(401).json({ error: "Invalid username or password" });
     }
