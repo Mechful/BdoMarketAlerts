@@ -1,11 +1,11 @@
 import type { BdoItemInfo } from "@shared/schema";
 
 const BASE_URL = "https://api.arsha.io";
-const REGION = process.env.BDO_REGION || "eu";
+const DEFAULT_REGION = process.env.BDO_REGION || "eu";
 
-export async function getItemInfo(id: number, sid: number = 0): Promise<BdoItemInfo | null> {
+export async function getItemInfo(id: number, sid: number = 0, region: string = DEFAULT_REGION): Promise<BdoItemInfo | null> {
   try {
-    const url = `${BASE_URL}/v2/${REGION}/item?id=${id}&lang=en`;
+    const url = `${BASE_URL}/v2/${region}/item?id=${id}&lang=en`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -53,9 +53,9 @@ export async function getItemInfo(id: number, sid: number = 0): Promise<BdoItemI
   }
 }
 
-export async function getItemPriceHistory(id: number, sid: number = 0): Promise<number[] | null> {
+export async function getItemPriceHistory(id: number, sid: number = 0, region: string = DEFAULT_REGION): Promise<number[] | null> {
   try {
-    const url = `${BASE_URL}/v2/${REGION}/history?id=${id}&sid=${sid}&lang=en`;
+    const url = `${BASE_URL}/v2/${region}/history?id=${id}&sid=${sid}&lang=en`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -207,14 +207,14 @@ function canItemBeEnhanced(itemName: string, itemId: number, maxEnhance: number)
   return false;
 }
 
-export async function searchItems(query: string): Promise<SearchResult[]> {
+export async function searchItems(query: string, region: string = DEFAULT_REGION): Promise<SearchResult[]> {
   try {
     if (!query || query.length < 2) {
       return [];
     }
 
     // Use BlackDesertMarket API for search - returns only marketplace-tradeable items
-    const url = `https://api.blackdesertmarket.com/search/${encodeURIComponent(query)}?region=eu&language=en-US`;
+    const url = `https://api.blackdesertmarket.com/search/${encodeURIComponent(query)}?region=${region}&language=en-US`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -234,7 +234,7 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
         .slice(0, 15) // Limit to 15 results
         .map(async (item: any) => {
           // Fetch item info to determine if it supports enhancement
-          const itemInfo = await getItemInfo(item.id, 0);
+          const itemInfo = await getItemInfo(item.id, 0, region);
           const maxEnhance = itemInfo ? (itemInfo.maxEnhance || 0) : 0;
           const supportsEnhancement = canItemBeEnhanced(item.name, item.id, maxEnhance);
           const itemType = getItemType(item.name);

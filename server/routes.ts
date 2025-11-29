@@ -222,7 +222,7 @@ export async function registerRoutes(
         return res.status(409).json({ error: "Item already being tracked" });
       }
       
-      const itemInfo = await getItemInfo(id, sid);
+      const itemInfo = await getItemInfo(id, sid, region);
       if (!itemInfo) {
         return res.status(404).json({ error: "Item not found in marketplace" });
       }
@@ -303,12 +303,13 @@ export async function registerRoutes(
   app.get("/api/search-items", async (req, res) => {
     try {
       const query = req.query.q as string;
+      const region = req.session?.region || "eu";
       
       if (!query) {
         return res.json([]);
       }
       
-      const results = await searchItems(query);
+      const results = await searchItems(query, region);
       res.json(results);
     } catch (error) {
       console.error("Error searching items:", error);

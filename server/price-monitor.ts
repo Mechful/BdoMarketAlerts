@@ -17,7 +17,7 @@ export async function checkPrices(region: string = "eu"): Promise<void> {
   
   for (const item of items) {
     try {
-      const currentInfo = await getItemInfo(item.id, item.sid);
+      const currentInfo = await getItemInfo(item.id, item.sid, region);
       
       if (!currentInfo) {
         console.log(`Could not fetch info for item ${item.id}:${item.sid}`);

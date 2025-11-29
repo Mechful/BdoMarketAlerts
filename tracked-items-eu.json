@@ -7,5 +7,14 @@
     "lastStock": 6888,
     "lastSoldTime": 1764406382,
     "addedAt": 1764406563196
+  },
+  {
+    "id": 4726,
+    "sid": 0,
+    "name": "Sturdy Caphras Tree Plywood",
+    "lastPrice": 985000,
+    "lastStock": 1823,
+    "lastSoldTime": 1764356321,
+    "addedAt": 1764406665496
   }
 ]
