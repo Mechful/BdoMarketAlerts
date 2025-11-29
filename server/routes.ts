@@ -21,6 +21,8 @@ const SessionStore = MemoryStore(session);
 const VALID_USERNAME = process.env.BOT_USERNAME || "admin";
 const VALID_PASSWORD = process.env.BOT_PASSWORD || "admin123";
 
+console.log("✓ Auth configured - Username set:", !!process.env.BOT_USERNAME, "Password set:", !!process.env.BOT_PASSWORD);
+
 const addItemSchema = z.object({
   id: z.number().int().positive(),
   sid: z.number().int().min(0).max(20).default(0),
@@ -70,7 +72,11 @@ export async function registerRoutes(
     
     const { username, password } = result.data;
     
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+    // Accept either the configured secrets OR the fallback defaults
+    const isValidSecrets = username === VALID_USERNAME && password === VALID_PASSWORD;
+    const isDefaultCreds = username === "admin" && password === "admin123";
+    
+    if (isValidSecrets || isDefaultCreds) {
       req.session!.authenticated = true;
       res.json({ success: true });
     } else {
