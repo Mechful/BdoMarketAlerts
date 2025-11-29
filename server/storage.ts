@@ -12,7 +12,12 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getTrackedItems(): Promise<TrackedItem[]> {
-    return db.select().from(trackedItems);
+    try {
+      return await db.select().from(trackedItems);
+    } catch (error) {
+      console.error("Error fetching tracked items:", error);
+      return [];
+    }
   }
 
   async getTrackedItem(id: number, sid: number): Promise<TrackedItem | undefined> {
@@ -62,6 +67,7 @@ export class DatabaseStorage implements IStorage {
         lastPrice: updates.lastPrice,
         lastStock: updates.lastStock,
         lastSoldTime: updates.lastSoldTime,
+        name: updates.name,
       })
       .where(and(eq(trackedItems.itemId, id), eq(trackedItems.sid, sid)))
       .returning();

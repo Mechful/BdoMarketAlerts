@@ -17,10 +17,10 @@ export async function checkPrices(): Promise<void> {
   
   for (const item of items) {
     try {
-      const currentInfo = await getItemInfo(item.id, item.sid);
+      const currentInfo = await getItemInfo(item.itemId, item.sid);
       
       if (!currentInfo) {
-        console.log(`Could not fetch info for item ${item.id}:${item.sid}`);
+        console.log(`Could not fetch info for item ${item.itemId}:${item.sid}`);
         continue;
       }
       
@@ -32,8 +32,12 @@ export async function checkPrices(): Promise<void> {
         
         const alert: PriceAlert = {
           item: {
-            ...item,
+            itemId: item.itemId,
+            sid: item.sid,
             name: currentInfo.name || item.name,
+            lastPrice: newPrice,
+            lastStock: currentInfo.currentStock,
+            lastSoldTime: currentInfo.lastSoldTime,
           },
           oldPrice,
           newPrice,
@@ -48,7 +52,7 @@ export async function checkPrices(): Promise<void> {
         await sendWebhookMessage(embed);
       }
       
-      await storage.updateTrackedItem(item.id, item.sid, {
+      await storage.updateTrackedItem(item.itemId, item.sid, {
         lastPrice: newPrice,
         lastStock: currentInfo.currentStock,
         lastSoldTime: currentInfo.lastSoldTime,
@@ -58,7 +62,7 @@ export async function checkPrices(): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (error) {
-      console.error(`Error checking price for item ${item.id}:${item.sid}:`, error);
+      console.error(`Error checking price for item ${item.itemId}:${item.sid}:`, error);
     }
   }
   

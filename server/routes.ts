@@ -208,7 +208,7 @@ export async function registerRoutes(
       }
       
       const item = await storage.addTrackedItem({
-        id: itemInfo.id,
+        itemId: itemInfo.id,
         sid: sid,
         name: itemInfo.name,
         lastPrice: itemInfo.lastSoldPrice,
