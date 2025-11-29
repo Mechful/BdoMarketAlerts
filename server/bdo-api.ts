@@ -121,3 +121,52 @@ export function getEnhancementLabel(sid: number): string {
   
   return penLabels[sid] || ` (+${sid})`;
 }
+
+export interface SearchResult {
+  id: number;
+  name: string;
+  icon: string;
+}
+
+export async function searchItems(query: string): Promise<SearchResult[]> {
+  try {
+    if (!query || query.length < 2) {
+      return [];
+    }
+
+    // Fetch items from Arsha.io API - search by name
+    const url = `${BASE_URL}/v2/${REGION}/items?lang=en`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      console.error(`BDO API search error: ${response.status} ${response.statusText}`);
+      return [];
+    }
+    
+    const data = await response.json();
+    
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    // Filter items by name (case-insensitive substring match)
+    const query_lower = query.toLowerCase();
+    const results = data
+      .filter((item: any) => 
+        item.name && 
+        item.name.toLowerCase().includes(query_lower) &&
+        item.id
+      )
+      .slice(0, 15) // Limit to 15 results
+      .map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
+      }));
+
+    return results;
+  } catch (error) {
+    console.error("Error searching items:", error);
+    return [];
+  }
+}

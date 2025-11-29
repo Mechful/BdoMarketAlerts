@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ItemSearch } from "@/components/item-search";
 import { Bot, Package, Clock, Globe, CheckCircle, Plus, Trash2, AlertCircle, RefreshCw, Activity, LogOut } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 
@@ -290,39 +291,50 @@ export default function Home() {
               </a>
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddItem} className="flex flex-wrap items-end gap-4">
-              <div className="flex-1 min-w-[150px]">
-                <Label htmlFor="itemId">Item ID</Label>
-                <Input
-                  id="itemId"
-                  type="number"
-                  placeholder="e.g. 10007"
-                  value={itemId}
-                  onChange={(e) => setItemId(e.target.value)}
-                  data-testid="input-item-id"
+          <CardContent className="space-y-4">
+            <form onSubmit={handleAddItem} className="space-y-4">
+              <div>
+                <Label htmlFor="itemSearch">Search Item by Name</Label>
+                <ItemSearch 
+                  onSelect={(id, name) => {
+                    setItemId(id.toString());
+                  }}
+                  placeholder="e.g. Iron Ore, Mushroom, Essence..."
                 />
               </div>
-              <div className="w-24">
-                <Label htmlFor="subId">Enhancement</Label>
-                <Input
-                  id="subId"
-                  type="number"
-                  placeholder="0"
-                  value={subId}
-                  onChange={(e) => setSubId(e.target.value)}
-                  data-testid="input-sub-id"
-                />
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="flex-1 min-w-[150px]">
+                  <Label htmlFor="itemId">Item ID</Label>
+                  <Input
+                    id="itemId"
+                    type="number"
+                    placeholder="e.g. 10007"
+                    value={itemId}
+                    onChange={(e) => setItemId(e.target.value)}
+                    data-testid="input-item-id"
+                  />
+                </div>
+                <div className="w-24">
+                  <Label htmlFor="subId">Enhancement</Label>
+                  <Input
+                    id="subId"
+                    type="number"
+                    placeholder="0"
+                    value={subId}
+                    onChange={(e) => setSubId(e.target.value)}
+                    data-testid="input-sub-id"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={addItemMutation.isPending}
+                  data-testid="button-add-item"
+                >
+                  {addItemMutation.isPending ? "Adding..." : "Add Item"}
+                </Button>
               </div>
-              <Button 
-                type="submit" 
-                disabled={addItemMutation.isPending}
-                data-testid="button-add-item"
-              >
-                {addItemMutation.isPending ? "Adding..." : "Add Item"}
-              </Button>
             </form>
-            <p className="text-xs text-muted-foreground mt-3">
+            <p className="text-xs text-muted-foreground">
               Enhancement levels: 0 = Base, 1-15 = +1 to +15, 16 = PRI, 17 = DUO, 18 = TRI, 19 = TET, 20 = PEN
             </p>
           </CardContent>

@@ -11,7 +11,7 @@ declare module "express-session" {
 }
 import { storage } from "./storage";
 import { startBot, getClient } from "./bot";
-import { getItemInfo } from "./bdo-api";
+import { getItemInfo, searchItems } from "./bdo-api";
 import { checkPrices } from "./price-monitor";
 import { createTestAlertEmbed, sendWebhookMessage } from "./discord-embeds";
 
@@ -228,6 +228,23 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error sending test alert:", error);
       res.status(500).json({ error: "Failed to send test alert" });
+    }
+  });
+
+  // Search items by name
+  app.get("/api/search-items", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query) {
+        return res.json([]);
+      }
+      
+      const results = await searchItems(query);
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching items:", error);
+      res.status(500).json({ error: "Failed to search items" });
     }
   });
 
