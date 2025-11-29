@@ -134,8 +134,8 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
       return [];
     }
 
-    // Fetch items from Arsha.io API - search by name
-    const url = `${BASE_URL}/v2/${REGION}/items?lang=en`;
+    // Use Arsha.io search endpoint - /v2/{region}/{lang}/search?search={query}
+    const url = `${BASE_URL}/v2/${REGION}/en/search?search=${encodeURIComponent(query)}`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -149,20 +149,15 @@ export async function searchItems(query: string): Promise<SearchResult[]> {
       return [];
     }
 
-    // Filter items by name (case-insensitive substring match)
-    const query_lower = query.toLowerCase();
+    // Map search results to our format
     const results = data
-      .filter((item: any) => 
-        item.name && 
-        item.name.toLowerCase().includes(query_lower) &&
-        item.id
-      )
       .slice(0, 15) // Limit to 15 results
       .map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id}.png`,
-      }));
+        id: item.id || item.itemId,
+        name: item.name || item.itemName,
+        icon: `https://s1.pearlcdn.com/NAEU/TradeMarket/Common/img/BDO/item/${item.id || item.itemId}.png`,
+      }))
+      .filter((item: any) => item.id && item.name); // Filter out invalid results
 
     return results;
   } catch (error) {
