@@ -134,15 +134,15 @@ export default function Home() {
     mutationFn: async (region: string) => {
       return apiRequest("POST", "/api/region", { region });
     },
-    onSuccess: (data: any) => {
-      setSelectedRegion(data.region);
+    onSuccess: (_data: any, newRegion: string) => {
+      setSelectedRegion(newRegion);
       queryClient.invalidateQueries({ queryKey: ["/api/items", selectedRegion] });
-      queryClient.invalidateQueries({ queryKey: ["/api/items", data.region] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items", newRegion] });
       queryClient.invalidateQueries({ queryKey: ["/api/status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/region"] });
       toast({
         title: "Region Changed",
-        description: `Switched to ${data.region.toUpperCase()} region.`,
+        description: `Switched to ${newRegion.toUpperCase()} region.`,
       });
     },
     onError: (error: any) => {
