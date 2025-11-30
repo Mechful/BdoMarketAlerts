@@ -18,13 +18,13 @@ import { createTestAlertEmbed, sendWebhookMessage } from "./discord-embeds";
 
 const SessionStore = MemoryStore(session);
 
-// Load credentials from environment variables (stored securely in Secrets)
+// Load credentials from environment variables
 const VALID_USERNAME = process.env.BOT_USERNAME || "";
 const VALID_PASSWORD = process.env.BOT_PASSWORD || "";
 
 if (!VALID_USERNAME || !VALID_PASSWORD) {
-  console.error("❌ ERROR: BOT_USERNAME and BOT_PASSWORD secrets are not set in Replit Secrets!");
-  console.error("Please add them to your Secrets tab before trying to login.");
+  console.error("❌ ERROR: BOT_USERNAME and BOT_PASSWORD environment variables are not set!");
+  console.error("Please add them to your .env file before trying to login.");
 }
 
 const addItemSchema = z.object({
